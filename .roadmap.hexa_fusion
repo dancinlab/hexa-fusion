@@ -1,0 +1,64 @@
+# .roadmap.hexa_fusion — repo-overall tracker
+
+> Cross-cutting state: invariant lattice, release cadence, cycle history,
+> deadlines, pointers. Sister substrate of `hexa-bio` / `hexa-rtsc` /
+> `hexa-ufo` / `petite-cern` under `need-singularity` org.
+
+**Last sync**: 2026-05-06 · **Current release**: v1.0.0 · **Branch**: `main`
+
+---
+
+## §0 Terminal goal — universal fusion-energy substrate (D-T → p-¹¹B → KSTAR-N6)
+
+hexa-fusion 도착지 = **27/27 EXACT (현재 26/27, lawson_triple 1-decade gap 잔존) + 12-archetype closure 122/122 자동 회귀 + p-¹¹B aneutronic 1m³ 시뮬레이션 wired + KSTAR-N6 powerplant Q≥10 closed-form 검증**.
+
+DoD:
+1. `fusion_ledger` 27/27 EXACT (lawson_triple 1-decade gap resolved 또는 documented falsifier).
+2. 12-fusion-archetype closure 122/122 EXACT 자동 회귀 (cycle-bound test).
+3. `tabletop_fusion` p-¹¹B aneutronic 1m³ 시뮬레이션 wired (.hexa).
+4. `fusion_powerplant` KSTAR-N6 RT-SC coil 48T → Q=σ-φ=10 closed-form 검증.
+
+n=6 invariant lattice (§A.1) 는 도착지의 *correctness machinery* — 도착지 자체가 아닌 closed-form 정합성 보장 도구.
+
+## §A.1 Invariant lattice (n=6)
+
+```
+σ(6) · φ(6) = n · τ(6) = J₂ = 24
+   12   ·   2  =  6  ·   4  = 24
+```
+
+| Symbol | Value | Role | Fusion projection |
+|--------|-------|------|-------------------|
+| σ(6)   | 12    | sigma — cardinality bin | 12 fusion archetypes / 12 ITER constants stratum |
+| τ(6)   | 4     | tau — state quartet | Q-gain = τ = 4 (TTF conservative break-even) |
+| φ(6)   | 2     | phi — verdict bit | aneutronic / DT-neutronic |
+| J₂     | 24    | Mathieu / Leech | σ·φ = n·τ = 24 master identity |
+
+Master identity: **σ·φ = n·τ = J₂ = 24**. Q-gain = σ-φ = 10 (powerplant). T_i = σ+φ = 14 keV (plasma core). B = σ·τ = 48 T (SC coil).
+
+## §A.2 Release cadence
+
+| Version | Date | Status | Highlights |
+|---------|------|--------|------------|
+| v1.0.0 | 2026-05-06 | RELEASED | 4-pillar 시드 (fusion + tabletop_fusion + fusion_powerplant + plasma_deep) + ledger 26/27 EXACT (1 honest negative) + verify 28-item + 3 CLI (calc/dse/verify) |
+| v1.1.0 | ~2026-07 (TARGET) | planned | `cli/fusion_calc` 자동 ITER constant 비교 + Q≥10 DSE 통합 |
+| v1.2.0 | ~2026-09 | planned | `tabletop_fusion` p-¹¹B aneutronic 1m³ 시뮬레이션 wired (.hexa) |
+| v1.3.0 | ~2026-11 | planned | `plasma_deep` reduced-MHD 솔버 wired |
+| v2.0.0 | ~2026-12 | ASPIRATIONAL | 12-archetype closure 122/122 EXACT 자동 회귀 + lawson_triple gap resolved 또는 documented |
+
+## §A.3 Cycle history
+
+- **Cycle 0 (2026-05-06)** — v1.0.0 initial extraction from n6-architecture@c0f1f570. Commit `1d2bad5`. 19 files / 10 seeds md5-verified MATCH.
+
+## §A.4 Falsifier preregister
+
+- **F-FUSION-1** — `lawson_triple_keV_s_per_m3` 1-decade gap (measured 5.6e21 vs n=6 closed-form 5.6e20). 측정 갱신 또는 closed-form refit 시 fit 가능 여부?
+- **F-FUSION-2** — tabletop p-¹¹B 1m³, Q=τ=4 break-even 실증 시 본 시뮬레이션과 일치?
+- **F-FUSION-3** — KSTAR-N6 RT-SC coil 48T 실현 시 Q=σ-φ=10 powerplant 도달?
+- **F-FUSION-4** — 12-archetype closure 122/122 EXACT, 새 archetype 추가 시 122 → 132 = 11·σ 패턴 유지?
+
+## §A.5 Pending decisions
+
+- lawson_triple gap resolution 우선순위 vs cycle 26 12-archetype 회귀 자동화 우선순위.
+- `bridge/origins/fusion-{calc,dse,verify}` 의 .hexa 코드 → cli/ 통합 entry로 dispatch wiring 시점.
+- hexa-rtsc cross-link 강도 (RTSC 실증 전까지 48T coil 추정값 사용?).
