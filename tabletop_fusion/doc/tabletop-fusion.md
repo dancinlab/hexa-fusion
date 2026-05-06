@@ -1,3 +1,6 @@
+<!-- @canonical: n6-architecture@0570a835:domains/energy/tabletop-fusion/tabletop-fusion.md -->
+<!-- @extracted: 2026-05-06 -->
+<!-- @md5_at_extraction: 420b63fe3ba3cac70050efb9603bb4ff -->
 <!-- gold-standard: shared/harness/sample.md -->
 ---
 domain: tabletop-fusion

@@ -1,3 +1,6 @@
+// @canonical: n6-architecture@0570a835:bridge/origins/fusion-verify/main.hexa
+// @extracted: 2026-05-06
+// @md5_at_extraction: 7efb3b21de90f522fb07719ba5671961
 // N6 Fusion Comprehensive Verifier -- HEXA port
 // 28 verification items, n=6 constants vs experimental values
 
