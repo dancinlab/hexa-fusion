@@ -1,0 +1,85 @@
+# hexa.toml — hexa-fusion standalone package manifest
+#
+# Spec: shared/hexa-lang/hexa-toml-spec.json (version 1.0.0)
+# Distribution target: hx install hexa-fusion
+# Provenance: extracted from n6-architecture@c0f1f570 on 2026-05-06
+#             (sister-extraction of hexa-bio v1.0.0; n=6 invariant lattice)
+
+[package]
+name = "hexa-fusion"
+version = "1.0.0"
+entry = "cli/hexa-fusion.hexa"
+description = "Fusion Toolkit (HEXA family) — D-T ignition + p-11B aneutronic + KSTAR-N6 powerplant + plasma deep. n=6 invariant lattice."
+license = "MIT"
+authors = ["박민우 <nerve011235@gmail.com>"]
+repository = "https://github.com/need-singularity/hexa-fusion"
+homepage = "https://github.com/need-singularity/hexa-fusion"
+readme = "README.md"
+keywords = ["fusion-toolkit", "hexa-family", "lawson", "d-t-ignition", "p-11b-aneutronic", "kstar-n6", "plasma-deep", "n6-invariant"]
+categories = ["physics", "energy", "plasma-simulation"]
+
+[lib]
+# Library entry — importable by other hexa packages.
+entry = "fusion/module/fusion_ledger.hexa"
+
+[[bin]]
+name = "hexa-fusion"
+path = "cli/hexa-fusion.hexa"
+
+[test]
+runner = "hexa"
+files = [
+    "tests/test_selftest.hexa",
+]
+
+# ── hx install hook ───────────────────────────────────────
+# install.hexa runs under hx package manager (hexa-lang) at install time.
+# Phases: pre   → no external deps required (pure-hexa orchestration).
+#         post  → quick selftest (warn-only, not a blocker).
+[scripts]
+install = "install.hexa"
+
+# ── Modules manifest (4 pillars + ledger + verifier) ──────
+# fusion           — D-T ignition Lawson closure + 27-item ledger + verifier
+# tabletop_fusion  — p-11B aneutronic feasibility scope (doc-only at v1.0)
+# fusion_powerplant — KSTAR-N6 powerplant scope             (doc-only at v1.0)
+# plasma_deep      — plasma physics deep-dive notes         (doc-only at v1.0)
+[modules]
+hexa = [
+    "fusion/module/fusion_ledger.hexa",
+    "fusion/module/verify_fusion.hexa",
+    "cli/fusion_calc.hexa",
+    "cli/fusion_dse.hexa",
+    "cli/fusion_verify.hexa",
+]
+
+# ── Dependencies ───────────────────────────────────────────
+# hexa stdlib only. No Python bridge required at v1.0.0.
+[dependencies]
+hexa-lang = ">=1.0.0"
+
+# ── Closure provenance ────────────────────────────────────
+# v1.0.0 closure: 26/27 EXACT (96.3%) + 1 honest negative (lawson_triple
+# 1-decade falsified, preserved per HONESTY guard). 12-archetype closure
+# 122/122 EXACT (v5). verify_fusion 28-item comprehensive sweep.
+[closure]
+ledger_total = 27
+ledger_exact = 26
+ledger_falsified_honest = 1
+archetype_closure = "122/122 EXACT (v5)"
+verify_items = 28
+verdict = "PASS_WITH_HONEST_NEGATIVE"
+extracted_from = "n6-architecture@c0f1f570 on 2026-05-06"
+
+# ── Scope honesty (raw#10 C3) ─────────────────────────────
+[scope]
+honest_scope = "fusion: D-T Lawson closure + 27-item ledger + verifier (numerical). tabletop_fusion / fusion_powerplant / plasma_deep: doc-only scope notes at v1.0.0; numerical impl deferred."
+not_scope = ["wet-lab plasma confinement (purely numerical)", "device engineering (no CAD / Q-machine model)", "regulatory / licensing", "weapons applications (peaceful-only scope, ref n6-architecture@c0f1f570)"]
+n6_lattice_caveat = "n=6 invariant (σ(6)=12, τ(6)=4, φ(6)=2, J₂=24) verified by 12-archetype closure (122/122 EXACT v5) + 27-item ledger (26 EXACT, 1 honest-negative). lawson_triple_keV_s_per_m3 falsified by 1 decade — preserved as honest negative (no inflation)."
+
+# ── Cost profile ──────────────────────────────────────────
+[cost]
+mac_local_default = "$0 (pure hexa-lang; no Python bridge)"
+ledger_full = "$0 (closed-form arithmetic)"
+verify_full = "$0 (28-item sweep, ~2s wall-clock)"
+calc_dse = "$0 (CLI calculators)"

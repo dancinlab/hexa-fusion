@@ -1,0 +1,380 @@
+#!hexa strict
+// hexa-fusion/cli/hexa-fusion.hexa — standalone hexa-fusion CLI router
+//
+// 4-sub-command Fusion Toolkit (HEXA family) router:
+//   ledger    — 27-item D-T ignition ledger (26 EXACT + 1 honest negative)
+//   calc      — closed-form fusion calculators (Lawson, Q, Carnot, etc.)
+//   dse       — design-space exploration (KSTAR-N6 powerplant scope)
+//   verify    — 28-item comprehensive verifier sweep
+//
+// Plus utility subcmds:
+//   status    — pillar status table (4 pillars: fusion / tabletop / powerplant / plasma_deep)
+//   selftest  — run all 4 sub-command sentinels
+//   help      — this help
+//   --version — print version
+//
+// Root resolution: $HEXA_FUSION_ROOT env, else inferred from $0 dirname.
+//
+// Constraints:
+//   raw#9   — hexa-only orchestration; no Python bridge at v1.0.0
+//   raw#15  — write-confined (audit log only)
+//   raw#10  — honest negative (lawson_triple 1-decade falsified) preserved
+//
+// Cost: $0 (Mac local; pure closed-form arithmetic).
+//
+// @no-lock-needed
+// @resolver-bypass(reason="Pure local CLI router; sub-commands manage their own logic.")
+
+let VERSION = "1.0.0"
+
+// ─── env / path resolve ───
+
+let HOME = env("HOME")
+let HEXA_FUSION_ROOT_ENV = env("HEXA_FUSION_ROOT")
+
+fn hexa_fusion_root() -> str {
+    if HEXA_FUSION_ROOT_ENV.len() > 0 { return HEXA_FUSION_ROOT_ENV }
+    let inferred = exec("dirname \"$(dirname \"$0\")\" 2>/dev/null || true").trim()
+    if inferred.len() > 0 { return inferred }
+    return HOME + "/.hexa-fusion"  // @allow-devpath
+}
+
+let HF = hexa_fusion_root()
+let HEXA_BIN = exec("command -v hexa 2>/dev/null || echo hexa").trim()
+
+let MOD_LEDGER = HF + "/fusion/module/fusion_ledger.hexa"
+let MOD_VERIFY = HF + "/fusion/module/verify_fusion.hexa"
+let MOD_CALC   = HF + "/cli/fusion_calc.hexa"
+let MOD_DSE    = HF + "/cli/fusion_dse.hexa"
+let MOD_VERIFY_CLI = HF + "/cli/fusion_verify.hexa"
+
+let LOG_PATH = HF + "/state/hexa_fusion_cli.log"
+
+// ─── arg helpers ───
+
+fn shq(s: str) -> str {
+    return "'" + s.replace("'", "'\\''") + "'"
+}
+
+fn has_flag(a: [str], flag: str) -> bool {
+    for x in a {
+        if x == flag { return true }
+    }
+    return false
+}
+
+fn json_mode(a: [str]) -> bool {
+    return has_flag(a, "--json")
+}
+
+// ─── audit log (jsonl) ───
+
+fn _ts_now() -> str {
+    return exec("date -u '+%Y-%m-%dT%H:%M:%SZ'").trim()
+}
+
+fn _audit(subcmd: str, args_str: str, exit_code: int) {
+    let line = "{\"ts\":\"" + _ts_now() + "\",\"caller\":\"hexa_fusion_standalone\",\"subcmd\":\"hexa-fusion " +
+               subcmd + "\",\"args\":\"" + args_str.replace("\"", "\\\"") +
+               "\",\"exit_code\":" + str(exit_code) + ",\"version\":\"" + VERSION + "\"}"
+    exec("mkdir -p " + shq(HF + "/state") + " 2>/dev/null")
+    exec("echo " + shq(line) + " >> " + shq(LOG_PATH) + " 2>/dev/null")
+}
+
+// ─── module runner ───
+
+fn _file_exists(p: str) -> bool {
+    let r = exec("[ -f " + shq(p) + " ] && echo yes || echo no").trim()
+    return r == "yes"
+}
+
+fn _run_module(script: str, extra: [str]) -> str {
+    if _file_exists(script) == false {
+        return "ERROR: module not found: " + script + " (set HEXA_FUSION_ROOT or run from repo root)"
+    }
+    let mut cmd = "HEXA_FUSION_ROOT=" + shq(HF) + " " + shq(HEXA_BIN) + " run " + shq(script)
+    for x in extra {
+        cmd = cmd + " " + shq(x)
+    }
+    return exec(cmd + " 2>&1")
+}
+
+// ─── caveat printer (raw#10 honest C3) ───
+
+fn _print_caveats() {
+    println("")
+    println("--- caveats (raw#10 C3) ---")
+    println("  1. 26/27 EXACT (96.3%) ledger closure. lawson_triple_keV_s_per_m3")
+    println("     is 1-decade falsified (measured 5.6e21 vs n=6 closed-form 5.6e20)")
+    println("     and preserved as honest negative — no inflation.")
+    println("  2. 12 fusion-archetype closure 122/122 EXACT (v5).")
+    println("  3. verify_fusion 28-item comprehensive sweep covers Carnot/Lawson/Q.")
+    println("  4. Pillars 2-4 (tabletop_fusion / fusion_powerplant / plasma_deep)")
+    println("     ship as doc-only at v1.0.0; numerical impl deferred.")
+    println("  5. Peaceful-only scope per n6-architecture@c0f1f570 (no weapons).")
+}
+
+// ─── subcommand: status ───
+
+fn cmd_status(a: [str]) {
+    if json_mode(a) {
+        let mut js = "{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"status\","
+        js = js + "\"pillars_total\":4,\"pillars_wired\":1,\"pillars_doc_only\":3,"
+        js = js + "\"ledger_exact\":26,\"ledger_total\":27,\"honest_negative\":1,"
+        js = js + "\"archetype_closure\":\"122/122 EXACT (v5)\","
+        js = js + "\"verify_items\":28,"
+        js = js + "\"verdict\":\"PASS_WITH_HONEST_NEGATIVE\""
+        js = js + "}"
+        println(js)
+        return
+    }
+
+    println("hexa-fusion " + VERSION + " status — 4-pillar Fusion Toolkit (HEXA family)")
+    println("")
+    println("  pillar              status              n=6 lattice              empirical scope")
+    println("  ------------------- ------------------- ------------------------ -------------------------")
+    println("  fusion              WIRED v1.0.0        EXACT 26/27 + 1 honest-  D-T Lawson closure")
+    println("                                          negative (lawson_triple) + 27-item ledger + verify")
+    println("  tabletop_fusion     DOC v1.0.0          inherited                p-11B aneutronic scope")
+    println("  fusion_powerplant   DOC v1.0.0          inherited                KSTAR-N6 powerplant scope")
+    println("  plasma_deep         DOC v1.0.0          inherited                plasma physics deep-dive")
+    println("")
+    println("  archetype closure: 122/122 EXACT (v5)")
+    println("  verify_fusion:     28-item comprehensive sweep")
+    println("  verdict: PASS_WITH_HONEST_NEGATIVE (lawson_triple preserved as honest negative)")
+    println("")
+    println("  to drill into a sub-command:")
+    println("    hexa-fusion ledger   (27-item D-T ignition ledger)")
+    println("    hexa-fusion calc     (closed-form fusion calculators)")
+    println("    hexa-fusion dse      (KSTAR-N6 design-space exploration)")
+    println("    hexa-fusion verify   (28-item comprehensive verifier)")
+    println("    hexa-fusion selftest (4-sub-command sentinel sweep)")
+    _print_caveats()
+}
+
+// ─── subcommand: ledger ───
+
+fn cmd_ledger(a: [str]) {
+    let raw = _run_module(MOD_LEDGER, [])
+    println(raw.trim())
+    if json_mode(a) {
+        let pass = if raw.contains("EXACT") { "true" } else { "false" }
+        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"ledger\",\"pass\":" + pass + "}")
+    }
+    _audit("ledger", "", 0)
+}
+
+// ─── subcommand: calc ───
+
+fn cmd_calc(a: [str]) {
+    let mut extras: [str] = []
+    let mut i = 3
+    while i < a.len() {
+        extras = extras + [a[i]]
+        i = i + 1
+    }
+    let raw = _run_module(MOD_CALC, extras)
+    println(raw.trim())
+    if json_mode(a) {
+        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"calc\"}")
+    }
+    _audit("calc", "", 0)
+}
+
+// ─── subcommand: dse ───
+
+fn cmd_dse(a: [str]) {
+    let mut extras: [str] = []
+    let mut i = 3
+    while i < a.len() {
+        extras = extras + [a[i]]
+        i = i + 1
+    }
+    let raw = _run_module(MOD_DSE, extras)
+    println(raw.trim())
+    if json_mode(a) {
+        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"dse\"}")
+    }
+    _audit("dse", "", 0)
+}
+
+// ─── subcommand: verify ───
+
+fn cmd_verify(a: [str]) {
+    let mut extras: [str] = []
+    let mut i = 3
+    while i < a.len() {
+        extras = extras + [a[i]]
+        i = i + 1
+    }
+    let raw = _run_module(MOD_VERIFY_CLI, extras)
+    println(raw.trim())
+    if json_mode(a) {
+        let pass = if raw.contains("PASS") { "true" } else { "false" }
+        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"verify\",\"pass\":" + pass + "}")
+    }
+    _audit("verify", "", 0)
+}
+
+// ─── subcommand: selftest ───
+
+fn cmd_selftest(a: [str]) {
+    println("hexa-fusion selftest — 4-sub-command sentinel sweep")
+    let mut all_ok = true
+    let modules = [["ledger", MOD_LEDGER], ["calc", MOD_CALC], ["dse", MOD_DSE], ["verify", MOD_VERIFY_CLI]]
+    for m in modules {
+        let name = m[0]
+        let path = m[1]
+        if _file_exists(path) {
+            println("  [OK]   " + name + "  → " + path)
+        } else {
+            println("  [MISS] " + name + "  → " + path)
+            all_ok = false
+        }
+    }
+    if all_ok {
+        println("__HEXA_FUSION_SELFTEST__ PASS  (4/4 sub-command modules present)")
+    } else {
+        println("__HEXA_FUSION_SELFTEST__ FAIL  (one or more modules missing)")
+    }
+    if json_mode(a) {
+        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"selftest\",\"verdict\":\"" + (if all_ok { "PASS" } else { "FAIL" }) + "\"}")
+    }
+    _print_caveats()
+    _audit("selftest", "", if all_ok { 0 } else { 1 })
+    if all_ok == false { exit(1) }
+}
+
+// ─── version ───
+
+fn cmd_version() {
+    println("hexa-fusion " + VERSION)
+    println("standalone Fusion Toolkit (HEXA family — extracted from n6-architecture@c0f1f570)")
+    println("license: MIT")
+    println("repo:    https://github.com/need-singularity/hexa-fusion")
+}
+
+// ─── help ───
+
+fn cmd_help() {
+    println("hexa-fusion " + VERSION + " — standalone Fusion Toolkit CLI")
+    println("")
+    println("usage: hexa-fusion <subcmd> [flags...]")
+    println("")
+    println("sub-commands (HEXA family — n=6 invariant lattice):")
+    println("  ledger          27-item D-T ignition ledger (26 EXACT + 1 honest negative)")
+    println("  calc            closed-form fusion calculators (Lawson / Q / Carnot)")
+    println("  dse             design-space exploration (KSTAR-N6 powerplant scope)")
+    println("  verify          28-item comprehensive verifier sweep")
+    println("")
+    println("utility subcommands:")
+    println("  status          pillar table + verdict + caveats")
+    println("  selftest        4-sub-command sentinel sweep")
+    println("")
+    println("global flags:")
+    println("  --version       show version")
+    println("  --json          machine-parseable JSON tail")
+    println("  --help, -h      this help")
+    println("")
+    println("env:")
+    println("  HEXA_FUSION_ROOT       override repo root (default: inferred from $0)")
+    println("")
+    println("cost estimate (Mac local): $0 — pure hexa-lang closed-form arithmetic.")
+    println("")
+    println("backend modules: " + HF)
+}
+
+fn cmd_subhelp(sub: str) {
+    if sub == "status" {
+        println("hexa-fusion status [--json]")
+        println("  show 4-pillar status table + n=6 lattice + caveats")
+        println("  cost: $0 (read-only)")
+    } else if sub == "ledger" {
+        println("hexa-fusion ledger [--json]")
+        println("  27-item D-T ignition ledger — 26 EXACT + 1 honest negative")
+        println("  honest negative: lawson_triple_keV_s_per_m3 falsified by 1 decade")
+        println("  cost: $0 (closed-form arithmetic)")
+    } else if sub == "calc" {
+        println("hexa-fusion calc [args...]")
+        println("  closed-form fusion calculators (Lawson, Q, Carnot, plasma)")
+        println("  cost: $0")
+    } else if sub == "dse" {
+        println("hexa-fusion dse [args...]")
+        println("  design-space exploration for KSTAR-N6 powerplant scope")
+        println("  cost: $0")
+    } else if sub == "verify" {
+        println("hexa-fusion verify [--json]")
+        println("  28-item comprehensive verifier sweep (Carnot/Lawson/Q + ledger sanity)")
+        println("  cost: $0 (~2s on Mac)")
+    } else if sub == "selftest" {
+        println("hexa-fusion selftest [--json]")
+        println("  4-sub-command sentinel sweep — verifies all 4 sub-command modules present")
+        println("  cost: $0")
+    } else {
+        cmd_help()
+    }
+}
+
+// ─── main ───
+
+fn main() {
+    let _raw = args()
+    let mut _sidx = -1
+    let mut _i = 0
+    while _i < _raw.len() {
+        if _raw[_i].ends_with(".hexa") { _sidx = _i; break }
+        _i = _i + 1
+    }
+    let mut _user_start = 2
+    if _sidx >= 0 { _user_start = _sidx + 1 }
+
+    let mut a: [str] = ["hexa_fusion_cli", "hexa_fusion_router"]
+    let mut _ua = _user_start
+    while _ua < _raw.len() {
+        a = a + [_raw[_ua]]
+        _ua = _ua + 1
+    }
+    let n = len(a)
+
+    if n < 3 {
+        cmd_help()
+        return
+    }
+
+    let sub = a[2]
+
+    if sub == "--version" || sub == "-V" || sub == "version" {
+        cmd_version()
+        return
+    }
+
+    if has_flag(a, "--help") || has_flag(a, "-h") {
+        if sub == "--help" || sub == "-h" || sub == "help" {
+            cmd_help()
+        } else {
+            cmd_subhelp(sub)
+        }
+        return
+    }
+
+    if sub == "help" { cmd_help(); return }
+
+    if sub == "status" {
+        cmd_status(a)
+    } else if sub == "ledger" {
+        cmd_ledger(a)
+    } else if sub == "calc" {
+        cmd_calc(a)
+    } else if sub == "dse" {
+        cmd_dse(a)
+    } else if sub == "verify" {
+        cmd_verify(a)
+    } else if sub == "selftest" {
+        cmd_selftest(a)
+    } else {
+        eprintln("hexa-fusion: unknown subcommand '" + sub + "'")
+        eprintln("run 'hexa-fusion help' for usage")
+        _audit(sub, "", 2)
+        exit(2)
+    }
+}

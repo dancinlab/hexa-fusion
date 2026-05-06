@@ -1,0 +1,61 @@
+#!hexa strict
+// hexa-fusion/tests/test_selftest.hexa — 4-sub-command sentinel sanity test.
+//
+// Verifies the 4 wired sub-command modules (ledger / calc / dse / verify)
+// are present on disk and that the CLI router file itself exists. This
+// matches the contract enforced by cli/hexa-fusion.hexa::cmd_selftest().
+//
+// Pure file-existence sentinel test — does NOT execute the modules.
+// (Module-execution semantics are validated by `hexa-fusion verify`.)
+
+fn _file_exists(p: str) -> bool {
+    let r = exec("[ -f \"" + p + "\" ] && echo yes || echo no").trim()
+    return r == "yes"
+}
+
+fn main() {
+    let mut root = env("HEXA_FUSION_ROOT")
+    if root == "" { root = exec("pwd").trim() }
+    println("test_selftest: HEXA_FUSION_ROOT=" + root)
+
+    let cli_router = root + "/cli/hexa-fusion.hexa"
+    let mod_ledger = root + "/fusion/module/fusion_ledger.hexa"
+    let mod_verify = root + "/fusion/module/verify_fusion.hexa"
+    let mod_calc   = root + "/cli/fusion_calc.hexa"
+    let mod_dse    = root + "/cli/fusion_dse.hexa"
+    let mod_verify_cli = root + "/cli/fusion_verify.hexa"
+
+    let targets = [
+        ["cli_router",    cli_router],
+        ["fusion_ledger", mod_ledger],
+        ["verify_fusion", mod_verify],
+        ["fusion_calc",   mod_calc],
+        ["fusion_dse",    mod_dse],
+        ["fusion_verify", mod_verify_cli],
+    ]
+
+    let mut all_ok = true
+    let mut count_ok = 0
+    let mut count_total = 0
+    for t in targets {
+        let name = t[0]
+        let path = t[1]
+        count_total = count_total + 1
+        if _file_exists(path) {
+            println("  [OK]   " + name + "  → " + path)
+            count_ok = count_ok + 1
+        } else {
+            println("  [MISS] " + name + "  → " + path)
+            all_ok = false
+        }
+    }
+    println("")
+    println("test_selftest: " + str(count_ok) + "/" + str(count_total) + " modules present")
+
+    if all_ok {
+        println("__HEXA_FUSION_TEST_SELFTEST__ PASS")
+    } else {
+        println("__HEXA_FUSION_TEST_SELFTEST__ FAIL")
+        exit(1)
+    }
+}
