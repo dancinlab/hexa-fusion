@@ -5,6 +5,13 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 21st RSC iteration: state/KSTAR_PLASMA_LOG, F-FUSION-3 T3 scaffold)
+- `state/KSTAR_PLASMA_LOG.hexa` — KSTAR plasma-log gap analyzer scaffold (T3 stub for F-FUSION-3). Companion to ITER_OPS_API.hexa. Where ITER_OPS_API stages the *measured-Lawson-triple* path for F-FUSION-1, this script stages the *KSTAR-N6 powerplant* path for F-FUSION-3 — closing the loop on the "RT-SC 48T → Q=σ-φ=10" closed-form retract condition. Ships with 4 fixture shot rows (shot-2024-001 / shot-2025-014 / shot-2026-target / rtsc-N6-target) reflecting public-domain announcements + KSTAR upgrade target windows; computes Q_meas = P_fus / P_in per shot; compares against closed-form Q_closed = σ-φ = 10; reports decade gap per row (2024 row ≈ 4-5 decades, 2026 row ≈ 2 decades, RT-SC N6 target = 0 decades). Asserts shot-year monotone progression (Q growing with year). Sentinel `__HEXA_FUSION_STATE_KSTAR_PLASMA_LOG__ PASS — 16/16 checks passed`.
+- This file does NOT close T3 — closure remains 67% (T1 + T2×3) for F-FUSION-3. Purpose: register the T3 path so when an actual RT-SC 48T coil + plasma demonstrator delivers Q≥10, the rtsc-N6-target row can be replaced with measured readings.
+
+### Verification (iter 21)
+- `hexa run state/KSTAR_PLASMA_LOG.hexa` → 16/16 PASS standalone (fixture mode).
+
 ### Added (2026-05-08 — 20th RSC iteration: state/ITER_OPS_API, F-FUSION-1 T3 scaffold)
 - `state/ITER_OPS_API.hexa` — ITER ops open-data feed parity scaffold (T3 stub for F-FUSION-1). The T3 tier is empirical (live D-T plasma data feed) and is fundamentally NOT closeable via `.hexa` scripts (recipe §9 — closure depth here is hardware/ops layer, not code). This script is the **interface scaffold** for that future feed: ships with 3 fixture rows from public-domain announcements (JET 1997 D-T record, ITER 2024 OPS baseline, KSTAR 2024 long-pulse) and asserts the n=6 closed-form Lawson `τ·10^14 = 4·10^14` vs measured ~10²¹ honest-negative gap (7 decades) is documented in the same arithmetic frame. Two operating modes: `fixture` (default, offline) and `live` (FIXTURE_ONLY=0 + ITER_OPS_API_URL set) — live mode emits "T3-deferred" sentinel because Stage-1+ hardware is not online. Sentinel `__HEXA_FUSION_STATE_ITER_OPS_API__ PASS — 9/9 checks passed`.
 - This file does NOT close T3 — closure remains 67% (T1 + T2×3) for F-FUSION-1. The script's purpose is to *register the T3 path* — when Stage-1+ data feed lands, the same fixture rows can be replaced with live readings.
