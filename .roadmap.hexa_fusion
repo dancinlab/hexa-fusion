@@ -2,9 +2,9 @@
 
 > Cross-cutting state: invariant lattice, release cadence, cycle history,
 > deadlines, pointers. Sister substrate of `hexa-bio` / `hexa-rtsc` /
-> `hexa-ufo` / `petite-cern` under `need-singularity` org.
+> `hexa-ufo` / `petite-cern` under `dancinlab` org.
 
-**Last sync**: 2026-05-06 · **Current release**: v1.0.0 · **Branch**: `main`
+**Last sync**: 2026-05-08 · **Current release**: v1.1.0 · **Branch**: `main`
 
 ---
 
@@ -41,8 +41,8 @@ Master identity: **σ·φ = n·τ = J₂ = 24**. Q-gain = σ-φ = 10 (powerplant
 | Version | Date | Status | Highlights |
 |---------|------|--------|------------|
 | v1.0.0 | 2026-05-06 | RELEASED | 4-pillar 시드 (fusion + tabletop_fusion + fusion_powerplant + plasma_deep) + ledger 26/27 EXACT (1 honest negative) + verify 28-item + 3 CLI (calc/dse/verify) |
-| v1.1.0 | ~2026-07 (TARGET) | planned | `cli/fusion_calc` 자동 ITER constant 비교 + Q≥10 DSE 통합 |
-| v1.2.0 | ~2026-09 | planned | `tabletop_fusion` p-¹¹B aneutronic 1m³ 시뮬레이션 wired (.hexa) |
+| v1.1.0 | 2026-05-08 | **RELEASED** | RSC closure (recipe §7) — 21 iters, sat-1 reached: 18 verify scripts (4 T1 + 12 T2 + 2 META) + 2 T3 scaffolds (state/ITER_OPS_API + KSTAR_PLASMA_LOG) + 5 tests + build pipeline (4 pillar PDFs). All 4 falsifiers (F-FUSION-1/2/3/4) at T1+T2×3 = 67% closure, T3 path registered, Stage-1+ hardware-bound. |
+| v1.2.0 | ~2026-09 | planned | `tabletop_fusion` p-¹¹B aneutronic 1m³ live simulation wired (replaces RK4 stub with multi-species) |
 | v1.3.0 | ~2026-11 | planned | `plasma_deep` reduced-MHD 솔버 wired |
 | v2.0.0 | ~2026-12 | ASPIRATIONAL | 12-archetype closure 122/122 EXACT 자동 회귀 + lawson_triple gap resolved 또는 documented |
 

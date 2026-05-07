@@ -5,6 +5,31 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-05-08
+
+### Released — RSC closure cycle (21 iterations, recipe §7 saturation)
+
+**Headline**: 21 iterations of `runnable_surface_recipe` applied to hexa-fusion, sat-1 (`all 4 falsifiers ≥ 67% closure + each T2 stack ≥ ×3`) **REACHED**. All 4 preregistered falsifiers (F-FUSION-1/2/3/4) carry T1 + T2×3 evidence; T3 scaffolds for F-FUSION-1/3 registered (Stage-1+ hardware bound).
+
+**Inventory**:
+  - **verify/ T1 algebraic** (4): lattice_check + cross_doc_audit + calc_fusion + calc_tabletop
+  - **verify/ T2 numerical** (12): numerics_fusion + numerics_fusion_parity + numerics_fusion_solver + **numerics_fusion_burnup** + numerics_tabletop + numerics_tabletop_parity + **numerics_tabletop_solver** + numerics_powerplant + numerics_powerplant_dse + numerics_cross_pillar + numerics_lattice_arithmetic + **numerics_plasma_deep**
+  - **verify/ META** (2): falsifier_check + lint_numerics
+  - **state/ T3 scaffolds** (2): **ITER_OPS_API** + **KSTAR_PLASMA_LOG**
+  - **tests/** (5): test_lattice + test_calculators + test_cli_verify + test_all + test_selftest
+  - **build/** (2): Makefile + header.tex (4 pillar PDFs build via pandoc + xelatex)
+  - **cli/** (1): hexa-fusion verify dispatcher (18 verify subs + 9 derivative subs)
+
+**Closure status**:
+  - F-FUSION-1 (lawson_triple): T1 + T2×3 + T3-scaffold-registered → 67%, T3 deferred to Stage-1+
+  - F-FUSION-2 (p-¹¹B Q=τ=4): T1 + T2×3 → 67%, T3 deferred to tabletop hardware
+  - F-FUSION-3 (KSTAR-N6 Q=10): T1 + T2×3 + T3-scaffold-registered → 67%, T3 deferred to RT-SC build
+  - F-FUSION-4 (122/122 archetype): T1 + T2×3 → 67%, T3 deferred to extended archetype set
+
+**T3 (empirical) hardware path**: now scaffolded but not closed. Fixture rows in state/*.hexa can be replaced with live readings as data feeds become available. Per recipe §9, code-layer closure is complete; remaining 33 % is hardware/ops layer (Stage-1+).
+
+**Lines added across iters 17-22**: ~1 700 lines of `.hexa` (3 numerics scripts + 2 T3 scaffolds + wiring).
+
 ### Added (2026-05-08 — 21st RSC iteration: state/KSTAR_PLASMA_LOG, F-FUSION-3 T3 scaffold)
 - `state/KSTAR_PLASMA_LOG.hexa` — KSTAR plasma-log gap analyzer scaffold (T3 stub for F-FUSION-3). Companion to ITER_OPS_API.hexa. Where ITER_OPS_API stages the *measured-Lawson-triple* path for F-FUSION-1, this script stages the *KSTAR-N6 powerplant* path for F-FUSION-3 — closing the loop on the "RT-SC 48T → Q=σ-φ=10" closed-form retract condition. Ships with 4 fixture shot rows (shot-2024-001 / shot-2025-014 / shot-2026-target / rtsc-N6-target) reflecting public-domain announcements + KSTAR upgrade target windows; computes Q_meas = P_fus / P_in per shot; compares against closed-form Q_closed = σ-φ = 10; reports decade gap per row (2024 row ≈ 4-5 decades, 2026 row ≈ 2 decades, RT-SC N6 target = 0 decades). Asserts shot-year monotone progression (Q growing with year). Sentinel `__HEXA_FUSION_STATE_KSTAR_PLASMA_LOG__ PASS — 16/16 checks passed`.
 - This file does NOT close T3 — closure remains 67% (T1 + T2×3) for F-FUSION-3. Purpose: register the T3 path so when an actual RT-SC 48T coil + plasma demonstrator delivers Q≥10, the rtsc-N6-target row can be replaced with measured readings.
