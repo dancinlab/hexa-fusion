@@ -33,6 +33,7 @@ let CASES = [
     "numerics_powerplant_dse.hexa|__HEXA_FUSION_NUMERICS_POWERPLANT_DSE__ PASS",
     "numerics_cross_pillar.hexa|__HEXA_FUSION_NUMERICS_CROSS_PILLAR__ PASS",
     "numerics_lattice_arithmetic.hexa|__HEXA_FUSION_NUMERICS_LATTICE__ PASS",
+    "numerics_plasma_deep.hexa|__HEXA_FUSION_NUMERICS_PLASMA_DEEP__ PASS",
 ]
 
 fn shq(s: str) -> str {

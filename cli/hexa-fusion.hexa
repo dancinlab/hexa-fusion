@@ -238,6 +238,7 @@ let VERIFY_SUBS = [
     "numerics-powerplant-dse",
     "numerics-cross",
     "numerics-lattice",
+    "numerics-plasma-deep",
     "falsifier",
     "lint-numerics",
 ]
@@ -258,6 +259,7 @@ fn _verify_script(sub: str) -> str {
     if sub == "numerics-powerplant-dse"  { return VERIFY_DIR + "/numerics_powerplant_dse.hexa" }
     if sub == "numerics-cross"           { return VERIFY_DIR + "/numerics_cross_pillar.hexa" }
     if sub == "numerics-lattice"         { return VERIFY_DIR + "/numerics_lattice_arithmetic.hexa" }
+    if sub == "numerics-plasma-deep"     { return VERIFY_DIR + "/numerics_plasma_deep.hexa" }
     if sub == "falsifier"                { return VERIFY_DIR + "/falsifier_check.hexa" }
     if sub == "lint-numerics"            { return VERIFY_DIR + "/lint_numerics.hexa" }
     return ""
@@ -306,6 +308,7 @@ fn _verify_help() {
     println("  numerics-powerplant-dse Q-gain DSE (T2: B-quadratic + T-linear scaling, monotonicity, break-even windows)")
     println("  numerics-cross          cross-pillar numerical anchor (T2: every n=6 float identical across 4 pillars)")
     println("  numerics-lattice        math_pure stability floor (T2: sqrt/pow/log/exp on n=6 anchors < 1e-9 rel err)")
+    println("  numerics-plasma-deep    plasma_deep + 122-closure depth (T2: 5 decompositions + Mk.I→VII projection + 11·σ pattern)")
     println("  falsifier               F-FUSION-1/2/3/4 closure-progress tracker (META: 3-tier ladder %)")
     println("  lint-numerics           every numerics_*.hexa conforms to 5-invariant regression pattern (META)")
     println("")
@@ -555,6 +558,7 @@ fn cmd_subhelp(sub: str) {
         println("  numerics-powerplant-dse → Q-gain DSE (T2: B-quadratic + T-linear scaling, monotonicity, break-even windows)")
         println("  numerics-cross          → cross-pillar numerical anchor (T2: every n=6 float identical across 4 pillars)")
         println("  numerics-lattice        → math_pure stability floor (T2: sqrt/pow/log/exp on n=6 anchors < 1e-9 rel err)")
+        println("  numerics-plasma-deep    → plasma_deep + 122-closure depth (T2: 5 decompositions + Mk.I→VII + 11·σ pattern)")
         println("  falsifier               → F-FUSION-1/2/3/4 closure-progress tracker (META)")
         println("  lint-numerics           → every numerics_*.hexa conforms to 5-invariant regression pattern (META)")
         println("  cost: $0 (~2s on Mac)")

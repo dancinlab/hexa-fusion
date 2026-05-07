@@ -91,7 +91,7 @@ let F3_T3_DESC       = "real RT-SC 48T coil + plasma demonstrator delivers Q ≥
 let F4_ID            = "F-FUSION-4"
 let F4_RETRACT       = "12-archetype 122/122 EXACT closure (σ·(σ-φ)+φ=122) retracted"
 let F4_T1_SCRIPTS    = ["calc_fusion.hexa"]
-let F4_T2_SCRIPTS    = ["numerics_cross_pillar.hexa", "numerics_lattice_arithmetic.hexa"]
+let F4_T2_SCRIPTS    = ["numerics_cross_pillar.hexa", "numerics_lattice_arithmetic.hexa", "numerics_plasma_deep.hexa"]
 let F4_T3_SCRIPTS: [str] = []
 let F4_T3_DESC       = "extended archetype set 122 → 132 = 11·σ pattern preserved"
 

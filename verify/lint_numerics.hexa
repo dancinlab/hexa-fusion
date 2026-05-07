@@ -75,6 +75,7 @@ let NUMERICS_SCRIPTS = [
     "numerics_powerplant_dse.hexa",
     "numerics_cross_pillar.hexa",
     "numerics_lattice_arithmetic.hexa",
+    "numerics_plasma_deep.hexa",
 ]
 
 let REQ_IMPORT_MATH     = "use \"self/runtime/math_pure\""

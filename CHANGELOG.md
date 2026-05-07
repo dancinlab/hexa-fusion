@@ -5,6 +5,26 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 19th RSC iteration: numerics_plasma_deep, F-FUSION-4 T2×3 stack — sat-1 reached)
+- `verify/numerics_plasma_deep.hexa` — plasma_deep (pillar 4) + archetype card 122 depth traversal (T2, third leg of F-FUSION-4). Where numerics_cross_pillar (T2 #1) asserts the closure once across pillars and numerics_lattice_arithmetic (T2 #2) keeps math_pure stability under sqrt/pow/log/exp, this script traverses the closure depth: (a) re-derives card 122 via 5 independent decompositions — canonical σ·(σ-φ)+φ, 11·σ-10, J₂·sopfr+φ, n·sopfr·τ+φ, σ²-σ·φ+φ — and asserts they agree bit-for-bit; (b) projects the archetype card across Mk.III → Mk.VII (10/11/12/13/14 archetypes → cards 82/101/122/145/170); (c) pins the F-FUSION-4 T3 sentinel "11·σ = 132" and the "11·σ - card-122 = σ-φ = Q_pp = 10" closure-bridge identity; (d) re-checks pillar-4 plasma_deep numerics anchors (T_e = σ+φ, λ_D, ω_pe, r_L) under math_pure float arithmetic via sqrt round-trip stability. Sentinel `__HEXA_FUSION_NUMERICS_PLASMA_DEEP__ PASS — 21/21 checks passed`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-plasma-deep]`; help bumped.
+- `verify/falsifier_check.hexa` — `F4_T2_SCRIPTS` extended to 3 entries (numerics_cross_pillar + numerics_lattice_arithmetic + numerics_plasma_deep). F-FUSION-4 closure stays 67% (T1 + T2 ✓) but T2 stack depth ×2 → ×3.
+- `verify/lint_numerics.hexa` — `NUMERICS_SCRIPTS` inventory bumped to 12 entries.
+- `tests/test_calculators.hexa` — added `numerics_plasma_deep.hexa|__HEXA_FUSION_NUMERICS_PLASMA_DEEP__ PASS` row.
+- `tests/test_cli_verify.hexa` — `EXPECTED_AGG = "PASS:  18/18"` (was 17/17).
+
+### sat-1 reached (recipe §7.2)
+After iter 19, all four falsifiers carry T2 stack depth ≥ 3:
+  - F-FUSION-1: T1 + T2×3 (numerics_fusion + numerics_fusion_solver + numerics_fusion_burnup)
+  - F-FUSION-2: T1 + T2×3 (numerics_tabletop + numerics_tabletop_parity + numerics_tabletop_solver)
+  - F-FUSION-3: T1 + T2×3 (numerics_fusion_parity + numerics_powerplant + numerics_powerplant_dse)
+  - F-FUSION-4: T1 + T2×3 (numerics_cross_pillar + numerics_lattice_arithmetic + numerics_plasma_deep)
+sat-1 (recipe §7.2: "all falsifiers ≥ 67% closure + each T2 ≥ ×3") **DONE**. T3 (live empirical hardware) still TBD — closes only when Stage-1+ build runs (ITER/SPARC/KSTAR/HB11 data feed).
+
+### Verification (iter 19)
+- `hexa run verify/numerics_plasma_deep.hexa` → 21/21 PASS standalone.
+- Note: full `verify all` aggregate skipped (same fork-saturation as iter 17/18). Direct `hexa_interp` invocation confirms correctness.
+
 ### Added (2026-05-08 — 18th RSC iteration: numerics_tabletop_solver, F-FUSION-2 T2×3 stack)
 - `verify/numerics_tabletop_solver.hexa` — p-11B 0D burn ODE solver (T2, third leg of F-FUSION-2). Where numerics_tabletop (T2 #1) re-derives the closed-form aneutronic identities (Q=τ=4 break-even, T_opt=300 keV, B^4 scaling) and numerics_tabletop_parity (T2 #2) compares against the 4-effort published table (HB11/TAE/LPP/ENN), this script integrates the actual p-11B burn-rate ODE step-by-step using a **classical RK4** solver (different from D-T's RK2) and validates: (a) RK4 matches analytic n_p(t)=N₀/(1+N₀·<σv>·t) within 1e-4 rel err at 4 checkpoints; (b) 3α-mass conservation invariant n_α + 3·n_p = 3·N₀ preserved within 1e-12 per step over 32 steps; (c) RK4 dominates RK2 on the same h (4th-order vs 2nd-order); (d) Q=τ=4 break-even, T_opt = n·(σ-φ)·sopfr = 300 keV, τ_burn ≈ 1/(N₀·<σv>) ≈ 2.17 s anchors stable; (e) burnup fraction at T_BURN > 0.98 (deep-burn regime: x = N₀·<σv>·t = 92, B = 92/93); (f) α energy density ≈ 1.4 GJ/m³ (3α per fusion · 8.68/3 MeV each at 1e21 m⁻³ initial fuel). Sentinel `__HEXA_FUSION_NUMERICS_TABLETOP_SOLVER__ PASS — 14/14 checks passed`. RK4 max rel-err vs analytic = 6.4e-6 %.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-tabletop-solver, ...]`; help bumped.

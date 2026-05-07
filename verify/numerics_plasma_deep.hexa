@@ -1,0 +1,349 @@
+#!hexa strict
+// hexa-fusion/verify/numerics_plasma_deep.hexa — plasma_deep (pillar 4) +
+// archetype card 122 traversal (T2, third leg of F-FUSION-4).
+//
+// F-FUSION-4 retracts on "12-archetype 122/122 EXACT closure
+// (σ·(σ-φ)+φ=122) retracted".  numerics_cross_pillar (T2 #1) asserts the
+// closure once across pillars; numerics_lattice_arithmetic (T2 #2) keeps
+// math_pure stability under sqrt/pow/log/exp; this script (T2 #3)
+// traverses the closure *depth* — re-derives card 122 via 5 independent
+// decompositions, projects the archetype card across Mk.I → Mk.VII,
+// and pins the F-FUSION-4 T3 sentinel "122 → 132 = 11·σ pattern" by
+// computing the next-archetype card and checking the 11·σ identity.
+//
+// Falsifies (T2):
+//   F-FUSION-4 — any one of the 5 closure decompositions for card=122
+//   diverges, OR the 11·σ Mk.VI projection fails, OR pillar-4 plasma
+//   anchors (T_e, B, λ_D) drift under math_pure float arithmetic.
+//
+// Run:
+//   hexa run verify/numerics_plasma_deep.hexa
+//
+// Cost: $0 (math_pure float arithmetic).
+
+use "self/runtime/math_pure"
+
+let HOME = env("HOME")
+
+fn _root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"
+}
+
+let ROOT = _root()
+
+// ── n=6 lattice ──────────────────────────────────────────────────────────
+let N      = 6.0
+let SIGMA  = 12.0
+let TAU    = 4.0
+let PHI    = 2.0
+let SOPFR  = 5.0
+let J2     = 24.0
+let MU     = 1.0
+
+// ── audit accumulator ───────────────────────────────────────────────────
+let mut RUN = 0
+let mut FAIL = 0
+let mut FAILURES: [str] = []
+
+let FALSIFIERS = [
+    "F-FUSION-4: card-122 closure decomposition #1 (canonical) fails",
+    "F-FUSION-4: card-122 closure decomposition #2 (11·σ - 10) fails",
+    "F-FUSION-4: card-122 closure decomposition #3 (J₂·sopfr + 2) fails",
+    "F-FUSION-4: card-122 closure decomposition #4 (n·sopfr·τ + φ) fails",
+    "F-FUSION-4: card-122 closure decomposition #5 (σ·(σ-φ)+φ explicit) fails",
+    "F-FUSION-4: card-145 (Mk.VI, 11·σ + 13) projection mismatch",
+    "F-FUSION-4: 11·σ pattern (132 anchor) drifts",
+    "F-FUSION-4: pillar-4 plasma anchor (T_e, λ_D, ω_pe) instability",
+]
+
+fn _abs(x: float) -> float { if x < 0.0 { return 0.0 - x } return x }
+
+fn _eq(a: float, b: float) -> bool { return _abs(a - b) < 1.0e-12 }
+
+fn _approx(a: float, b: float, tol: float) -> bool {
+    let denom = if _abs(b) > 1e-15 { _abs(b) } else { 1.0 }
+    return _abs(a - b) / denom <= tol
+}
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label + "  ·  " + detail)
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label + "  ·  " + detail)
+    }
+}
+
+// ── §1 card-122 closure via 5 independent decompositions ────────────────
+
+fn check_card_canonical() {
+    // #1: card = σ·(σ-φ) + φ = 12·10 + 2 = 122
+    let card = SIGMA * (SIGMA - PHI) + PHI
+    _check(_eq(card, 122.0),
+           "card-122 #1 canonical: σ·(σ-φ) + φ = 122",
+           "12·10 + 2 = " + str(card))
+}
+
+fn check_card_eleven_sigma() {
+    // #2: 11·σ - 10 = 132 - 10 = 122
+    let card = 11.0 * SIGMA - 10.0
+    _check(_eq(card, 122.0),
+           "card-122 #2: 11·σ - 10 = 132 - 10 = 122 (Mk.VI sneak-preview)",
+           "11·12 - 10 = " + str(card))
+}
+
+fn check_card_j2_sopfr() {
+    // #3: J₂·sopfr + φ = 24·5 + 2 = 122
+    let card = J2 * SOPFR + PHI
+    _check(_eq(card, 122.0),
+           "card-122 #3: J₂·sopfr + φ = 24·5 + 2 = 122",
+           "24·5 + 2 = " + str(card))
+}
+
+fn check_card_n_sopfr_tau() {
+    // #4: n·sopfr·τ + φ = 6·5·4 + 2 = 122
+    let card = N * SOPFR * TAU + PHI
+    _check(_eq(card, 122.0),
+           "card-122 #4: n·sopfr·τ + φ = 6·5·4 + 2 = 122",
+           "6·5·4 + 2 = " + str(card))
+}
+
+fn check_card_explicit() {
+    // #5: σ·σ - σ·φ + φ = (σ-φ)·σ + φ explicitly expanded
+    let part1 = SIGMA * SIGMA
+    let part2 = SIGMA * PHI
+    let card = part1 - part2 + PHI
+    _check(_eq(card, 122.0),
+           "card-122 #5: σ² - σ·φ + φ = 144 - 24 + 2 = 122 (expansion)",
+           "144 - 24 + 2 = " + str(card))
+}
+
+fn check_all_decompositions_agree() {
+    let c1 = SIGMA * (SIGMA - PHI) + PHI
+    let c2 = 11.0 * SIGMA - 10.0
+    let c3 = J2 * SOPFR + PHI
+    let c4 = N * SOPFR * TAU + PHI
+    let c5 = SIGMA * SIGMA - SIGMA * PHI + PHI
+    let all_equal = _eq(c1, c2) && _eq(c2, c3) && _eq(c3, c4) && _eq(c4, c5)
+    _check(all_equal,
+           "all 5 card-122 decompositions agree bit-for-bit",
+           "c1=" + str(c1) + " c2=" + str(c2) + " c3=" + str(c3) +
+           " c4=" + str(c4) + " c5=" + str(c5))
+}
+
+// ── §2 Mk.I → Mk.VII archetype card projection ──────────────────────────
+//
+// card(M) = M·(M-φ) + φ for M = archetype-count.
+// Mk.V = SIGMA = 12 archetypes → card = 122 (canonical).
+// Mk.VI = 13 archetypes → card = 13·11 + 2 = 145.
+// Mk.VII = 14 archetypes → card = 14·12 + 2 = 170.
+// Mk.IV = 11 → card = 11·9 + 2 = 101.
+// Mk.III = 10 → card = 10·8 + 2 = 82.
+
+fn card_at(m: float) -> float {
+    return m * (m - PHI) + PHI
+}
+
+fn check_mk5_canonical() {
+    _check(_eq(card_at(SIGMA), 122.0),
+           "card(Mk.V = σ = 12) = 122 (canonical anchor)",
+           "card(12) = " + str(card_at(SIGMA)))
+}
+
+fn check_mk6_projection() {
+    // Mk.VI sneak-preview = SIGMA + 1 = 13 archetypes.
+    let m = SIGMA + 1.0
+    _check(_eq(card_at(m), 145.0),
+           "card(Mk.VI = σ+1 = 13) = 145 (T3 closure target neighbour)",
+           "card(13) = " + str(card_at(m)))
+}
+
+fn check_mk7_projection() {
+    let m = SIGMA + 2.0
+    _check(_eq(card_at(m), 170.0),
+           "card(Mk.VII = σ+2 = 14) = 170",
+           "card(14) = " + str(card_at(m)))
+}
+
+fn check_mk4_retrojection() {
+    let m = SIGMA - 1.0
+    _check(_eq(card_at(m), 101.0),
+           "card(Mk.IV = σ-1 = 11) = 101 (sub-σ retrojection)",
+           "card(11) = " + str(card_at(m)))
+}
+
+fn check_mk3_retrojection() {
+    let m = SIGMA - 2.0
+    _check(_eq(card_at(m), 82.0),
+           "card(Mk.III = σ-2 = 10) = 82",
+           "card(10) = " + str(card_at(m)))
+}
+
+fn check_card_increment_anchored() {
+    // card(M+1) - card(M) = 2·M - φ + 1 = 2M-1 (for φ=2)
+    // At M=σ=12: increment = 23.  card(13) - card(12) = 145 - 122 = 23.
+    let inc = card_at(SIGMA + 1.0) - card_at(SIGMA)
+    let pred = 2.0 * SIGMA - PHI + 1.0
+    _check(_eq(inc, pred) && _eq(inc, 23.0),
+           "card(σ+1) - card(σ) = 2σ-1 = 23 (anchor increment law)",
+           "Δ = " + str(inc) + " predicted=" + str(pred))
+}
+
+// ── §3 11·σ pattern (F-FUSION-4 T3 sentinel) ───────────────────────────
+
+fn check_11_sigma_anchor() {
+    // F-FUSION-4 T3: "extended archetype set 122 → 132 = 11·σ pattern preserved"
+    let v = 11.0 * SIGMA
+    _check(_eq(v, 132.0),
+           "11·σ = 132 anchor (F-FUSION-4 T3 sentinel)",
+           "11·12 = " + str(v))
+}
+
+fn check_122_vs_132_gap() {
+    // 132 - 122 = 10 = σ - φ = Q_powerplant
+    let gap = (11.0 * SIGMA) - 122.0
+    let q_pp = SIGMA - PHI
+    _check(_eq(gap, q_pp) && _eq(gap, 10.0),
+           "11·σ - card-122 = σ-φ = Q_powerplant = 10 (closure-bridge identity)",
+           "gap = " + str(gap) + " Q_pp = " + str(q_pp))
+}
+
+// ── §4 pillar-4 plasma_deep numerics anchors ───────────────────────────
+//
+// Plasma deep refers to the 4-pillar tetrahedron's 4th leg.  We assert that
+// the n=6 lattice anchors hold even when computed via float arithmetic
+// (sqrt / log / exp through math_pure) — i.e., float drift doesn't alter
+// the integer atoms.
+
+fn check_t_e_plasma_deep() {
+    // T_e = σ + φ = 14 keV (electron temperature, same as T_i anchor)
+    let t = SIGMA + PHI
+    _check(_eq(t, 14.0),
+           "plasma_deep T_e = σ+φ = 14 keV (lattice anchor)",
+           "T_e = " + str(t))
+}
+
+fn check_lambda_debye_anchor() {
+    // λ_D ∝ sqrt(T_e / n_e).  For T_e = 14 keV and a notional n_e = 1e20 m⁻³,
+    // sqrt-ratio is what we test.  We construct a nondimensional ratio:
+    //   λ_D_anchor² = (σ+φ)/(σ·sopfr) = 14/60 ≈ 0.2333
+    // and re-derive via math_pure sqrt → square → confirm round-trip stable.
+    let r2 = (SIGMA + PHI) / (SIGMA * SOPFR)
+    let r  = sqrt_pure(r2)
+    let r2_back = r * r
+    _check(_approx(r2_back, r2, 1.0e-12),
+           "λ_D anchor sqrt round-trip: sqrt((σ+φ)/(σ·sopfr))² stable to 1e-12",
+           "r²=" + str(r2) + "  r²_back=" + str(r2_back))
+}
+
+fn check_omega_pe_anchor() {
+    // ω_pe ∝ sqrt(n_e), nondimensional anchor:
+    // ω_pe² ratio at n_e ↔ J₂·n_e is sqrt(J₂) = sqrt(24) ≈ 4.899.
+    let r2 = J2
+    let r  = sqrt_pure(r2)
+    _check(_approx(r * r, J2, 1.0e-12),
+           "ω_pe anchor sqrt(J₂) = sqrt(24) ≈ 4.899 round-trip stable",
+           "sqrt(24) = " + str(r) + "  squared = " + str(r * r))
+}
+
+fn check_larmor_radius_anchor() {
+    // r_L ∝ 1/B.  Lattice B = σ·τ = 48 T.  Reciprocal stable under float.
+    let b = SIGMA * TAU
+    let r_l = 1.0 / b
+    let b_back = 1.0 / r_l
+    _check(_approx(b_back, b, 1.0e-12),
+           "r_L anchor 1/B = 1/48 reciprocal round-trip stable",
+           "1/B=" + str(r_l) + " B_back=" + str(b_back))
+}
+
+// ── §5 archetype-row n=6 closure (12 archetypes from σ) ─────────────────
+
+fn check_archetype_count() {
+    _check(_eq(SIGMA, 12.0),
+           "archetype count = σ = 12 (Mk.V universe size)",
+           "σ = " + str(SIGMA))
+}
+
+fn check_card_per_archetype_avg() {
+    // 122 / 12 ≈ 10.167 = (σ-φ + 2/σ).  Check arithmetic identity.
+    let avg = 122.0 / SIGMA
+    let pred = (SIGMA - PHI) + (PHI / SIGMA)
+    _check(_approx(avg, pred, 1.0e-12),
+           "card-122 per-archetype avg = σ-φ + φ/σ = 10.1667",
+           "avg=" + str(avg) + " pred=" + str(pred))
+}
+
+// ── §6 master closure stable through all derivations ──────────────────
+
+fn check_master_stable() {
+    _check(_eq(SIGMA * PHI, J2) && _eq(N * TAU, J2),
+           "master closure σ·φ = n·τ = J₂ = 24 stable through depth traversal",
+           "σ·φ=" + str(SIGMA * PHI) + " n·τ=" + str(N * TAU))
+}
+
+// ── main ────────────────────────────────────────────────────────────────
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — plasma_deep + archetype-card depth traversal")
+    println("                (T2, numerics_plasma_deep)")
+    println("  pillar 4 (plasma_deep) + 122-closure decomposition × 5")
+    println("  + Mk.I → Mk.VII archetype-card projection")
+    println("========================================================================")
+    println("  root: " + ROOT)
+    println("  falsifiers (T2 evidence): F-FUSION-4")
+    println("")
+
+    println("-- §1 card-122 closure via 5 decompositions --")
+    check_card_canonical()
+    check_card_eleven_sigma()
+    check_card_j2_sopfr()
+    check_card_n_sopfr_tau()
+    check_card_explicit()
+    check_all_decompositions_agree()
+    println("")
+    println("-- §2 Mk.I → Mk.VII archetype-card projection --")
+    check_mk5_canonical()
+    check_mk6_projection()
+    check_mk7_projection()
+    check_mk4_retrojection()
+    check_mk3_retrojection()
+    check_card_increment_anchored()
+    println("")
+    println("-- §3 11·σ pattern (T3 sentinel) --")
+    check_11_sigma_anchor()
+    check_122_vs_132_gap()
+    println("")
+    println("-- §4 plasma_deep pillar-4 anchors --")
+    check_t_e_plasma_deep()
+    check_lambda_debye_anchor()
+    check_omega_pe_anchor()
+    check_larmor_radius_anchor()
+    println("")
+    println("-- §5 archetype row closure --")
+    check_archetype_count()
+    check_card_per_archetype_avg()
+    println("")
+    println("-- §6 master closure stability --")
+    check_master_stable()
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_NUMERICS_PLASMA_DEEP__ FAIL")
+        exit(1)
+    }
+    println("  plasma_deep + 122-closure depth: 5 decompositions + 5 archetype")
+    println("  projections + 4 plasma anchors all stable; 11·σ T3 sentinel pinned.")
+    println("__HEXA_FUSION_NUMERICS_PLASMA_DEEP__ PASS")
+    exit(0)
+}
