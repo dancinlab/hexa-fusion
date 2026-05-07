@@ -225,11 +225,13 @@ let VERIFY_DIR = HF + "/verify"
 let VERIFY_SUBS = [
     "lattice",
     "cross-doc",
+    "fusion",
 ]
 
 fn _verify_script(sub: str) -> str {
     if sub == "lattice"   { return VERIFY_DIR + "/lattice_check.hexa" }
     if sub == "cross-doc" { return VERIFY_DIR + "/cross_doc_audit.hexa" }
+    if sub == "fusion"    { return VERIFY_DIR + "/calc_fusion.hexa" }
     return ""
 }
 
@@ -263,6 +265,7 @@ fn _verify_help() {
     println("  all             run every verify/*.hexa in sequence (aggregate)")
     println("  lattice         n=6 σ(6)·φ(6) = n·τ(6) = J₂ = 24 closure across roadmap + 4 pillars")
     println("  cross-doc       cross-pillar anchor consistency (Q/T_i/B/η/J₂/archetype/ledger/falsifier)")
+    println("  fusion          D-T pillar n=6 algebraic derivation (master + fuel + Q + B + Lawson + archetype)")
     println("")
     println("exit:")
     println("  0  selected verifier(s) PASS")
@@ -497,6 +500,7 @@ fn cmd_subhelp(sub: str) {
         println("  all             → run every verify/*.hexa in sequence (aggregate)")
         println("  lattice         → n=6 σ·φ = n·τ = J₂ = 24 closure across roadmap + 4 pillars")
         println("  cross-doc       → cross-pillar anchor consistency audit")
+        println("  fusion          → D-T pillar n=6 algebraic derivation (master + fuel + Q + B + Lawson + archetype)")
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")

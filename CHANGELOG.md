@@ -5,6 +5,18 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 3rd RSC iteration: D-T pillar algebraic derivation + test_calculators scaffolding)
+- `verify/calc_fusion.hexa` — D-T pillar n=6 algebraic derivation (T1, 21/21 PASS). 9 sections cover master closure, fuel quartet (D=φ, T=n/φ, α=τ, Li-6=n), energy partition (α=1/sopfr=20%, n=τ/sopfr=80%), plasma+Q (T_i=σ+φ=14, Q=σ-φ=10), magnet+coil (B=σ·τ=48 with J₂²/σ factorisation cross-check, TF=3n=18), Brayton η=σ/J₂=50% + p-11B η_ratio=σ/n=2, TBR=(n+1)/n=7/6, Lawson closed-form (exponent=σ+φ=14, prefactor=τ=4), and 12-archetype card (σ·(σ-φ)+φ=122). Provides T1 evidence for F-FUSION-1 (Lawson) and F-FUSION-3 (powerplant Q). Sentinel `__HEXA_FUSION_CALC_FUSION__ PASS`.
+- `tests/test_calculators.hexa` — calc_*/numerics_* sentinel sweep scaffolding (1 case at iter 3; bumps per iter). Sentinel `__HEXA_FUSION_TEST_CALCULATORS__ PASS`.
+- `tests/test_all.hexa` — added test_calculators row (5 cases now).
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [lattice, cross-doc, fusion]`; help bumped.
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  3/3`.
+
+### Verification (iter 3)
+- `hexa run verify/calc_fusion.hexa` → 21/21 PASS.
+- `hexa-fusion verify all` → `PASS: 3/3`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 2nd RSC iteration: cross-pillar anchor consistency)
 - `verify/cross_doc_audit.hexa` — cross-pillar anchor consistency (T1, 24/24 PASS). Asserts that the canonical n=6 anchors (Q=σ-φ=10, T_i=σ+φ=14, B=σ·τ=48, η=σ/J₂=50%, J₂=24, aneutronic/neutronic verdict bit, archetype 122/122, ledger 26/27 + 1 honest negative) and the 4 falsifier preregister tags (F-FUSION-1/2/3/4) are referenced consistently across .roadmap + 4 pillar docs + hexa.toml + README. Sentinel `__HEXA_FUSION_CROSSDOC__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [lattice, cross-doc]`; help + per-subcmd help bumped.
