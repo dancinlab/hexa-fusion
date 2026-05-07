@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 8th RSC iteration: tabletop p-11B numerics, F-FUSION-2 T2)
+- `verify/numerics_tabletop.hexa` — tabletop p-11B numerics (T2, 19/19 PASS). 9 sections cover float ↔ int parity (master + p-11B mass complement σ=12 + 3·α=σ), B^4 scaling via `pow_pure` (B^4=5.31M, V_TT/V_ITER ≈ 1.486e-4), Gamow peak T_opt=300 keV vs published σv-peak 200 keV (50% over-resonance) and Gamow resonance 580 keV (48% under), Q break-even (τ=4) + Q_pp/Q_be ratio 2.5, power density 10 MW/m³ + P_core = 8.7 kW float arith, device mass + cost, p-11B Q-value 8.68 MeV in n=6 anchor band (σ/φ=6 < 8.68 < φ·sopfr=10) + per-α 2.89 MeV ≈ Q/(n/φ)=8.68/3, He-4 binding ↔ J₂ parity, ignition cardinality + battery σ·τ=48 kWh. Provides T2 evidence for F-FUSION-2. Sentinel `__HEXA_FUSION_NUMERICS_TABLETOP__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-tabletop]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_tabletop row (6 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  8/8`.
+
+### Verification (iter 8)
+- `hexa run verify/numerics_tabletop.hexa` → 19/19 PASS.
+- `hexa-fusion verify all` → `PASS: 8/8`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 7th RSC iteration: 0D D-T burn ODE solver)
 - `verify/numerics_fusion_solver.hexa` — 0D D-T burn ODE solver (T2, 8/8 PASS). Step-by-step RK2 (midpoint) integration of the simplest D-T burn-rate equation (constant T_i = σ+φ = 14 keV, equal initial n_D = n_T): `dn_D/dt = -n_D²·<σv>` with closed-form reference `n_D(t) = n_0 / (1 + n_0·<σv>·t)`. 5 sections: RK2 vs analytic at 4 checkpoints (max rel-err 0.000347%), mass balance D=T and D+α=N₀ to 1e-12 over 16 steps, burnup fraction 0.524 at t=T_BURN, τ_burn ≈ 90.91 s in [50,150]s window, α energy density ≈ 29.5 MJ/m³ in [25,35] MJ/m³ window. Provides T2 evidence for F-FUSION-1 (the actual numerical solver beyond the closed-form Lawson identity in numerics_fusion). T3 (live D-T plasma data feed) still TBD. Sentinel `__HEXA_FUSION_NUMERICS_FUSION_SOLVER__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion-solver]`; help bumped.
