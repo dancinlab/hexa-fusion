@@ -5,6 +5,21 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 1st RSC iteration: lattice closure + verify dispatcher + test scaffolding)
+- `verify/lattice_check.hexa` — n=6 invariant lattice audit (T1). 35/35 checks: master closure (σ·φ = n·τ = J₂ = 24) + 8 fusion-projected derivations (Q=σ-φ=10, T_i=σ+φ=14, B=σ·τ=48, Brayton η=σ/J₂=50%, TBR=(n+1)/n=7/6, TF=3n=18, D-T α/n split, verdict bit) + roadmap declaration check + 4-pillar lattice-token cross-reference + archetype 122/122 + tabletop Q=τ=4 + powerplant B=σ·τ=48T + hexa.toml verdict honesty. Sentinel `__HEXA_FUSION_LATTICE__ PASS`.
+- `cli/hexa-fusion.hexa` — extended `verify` subcommand with 2-tier dispatch: bare `verify` keeps the 28-item comprehensive sweep (v1.0.0 contract preserved); `verify all` runs every `verify/*.hexa` and aggregates exit codes; `verify <sub>` runs a single script. `VERIFY_SUBS = [lattice]` is the authoritative inventory (bumps per recipe iteration).
+- `tests/test_lattice.hexa` — wraps `verify/lattice_check.hexa`; asserts exit 0 + sentinel. Sentinel `__HEXA_FUSION_TEST_LATTICE__ PASS`.
+- `tests/test_cli_verify.hexa` — integration regression on `hexa-fusion verify all`; expected aggregate `PASS:  1/1` at iter 1 (bumps per iter). Sentinel `__HEXA_FUSION_TEST_CLI_VERIFY__ PASS`.
+- `tests/test_all.hexa` — top-level test aggregator; runs 4 cases (selftest + derivative + lattice + cli_verify). Sentinel `__HEXA_FUSION_TEST_ALL__ PASS`.
+
+### Verification (iter 1)
+- `hexa run verify/lattice_check.hexa` → 35/35 PASS, 0 warn.
+- `hexa-fusion verify all` → `PASS: 1/1`, exit 0.
+- `hexa run tests/test_all.hexa` → 4/4 PASS, exit 0.
+
+### Recipe provenance
+- Following `~/core/bedrock/docs/runnable_surface_recipe.md` (Runnable Surface Construction). Validated upstream in hexa-cern v1.1.0-pre (16-script standard inventory, 7-step cycle per chunk).
+
 ### Added — derivative analysis (sscb-pattern composition)
 - `cli/fusion_margin.hexa` — per-row residual / headroom report (sorted tightest first); 25 EXACT + 1 TIGHT + 1 BREACH (lawson_triple expected) on canonical n=6.
 - `cli/fusion_whatif.hexa` — override n=6 lattice anchors and re-run the 27-row ledger; supports `--set sigma=11`-style counter-factuals; baseline reproduces 26/27 match.
@@ -19,7 +34,7 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 - `install.hexa` — post-install now runs derivative-smoke after the core selftest.
 
 ### Composition origin
-- Pattern referenced from [`hexa-sscb`](https://github.com/need-singularity/hexa-sscb) — `verify/sscb_verify.py`, `verify/cross_doc_audit.py`, `verify/bom_lattice.py` — adapted to hexa-fusion's 27-row ledger and 4-pillar tetrahedron. No hexa-sscb source modified; only structural composition reused.
+- Pattern referenced from [`hexa-sscb`](https://github.com/dancinlab/hexa-sscb) — `verify/sscb_verify.py`, `verify/cross_doc_audit.py`, `verify/bom_lattice.py` — adapted to hexa-fusion's 27-row ledger and 4-pillar tetrahedron. No hexa-sscb source modified; only structural composition reused.
 
 ### Verification
 - All 7 new sentinels emit `__FUSION_<MODULE>__ PASS` on canonical n=6 lattice.
@@ -46,7 +61,7 @@ All notable changes to **hexa-fusion** are documented here. Format follows
   - `cli/fusion_verify.hexa` — 28-item verifier sweep
 - `hexa.toml` — package manifest (MIT, hexa-lang ≥ 1.0.0)
 - `install.hexa` — hx pre/post hook (pure-hexa, no Python deps)
-- `LICENSE` — MIT (Copyright (c) 2026 need-singularity)
+- `LICENSE` — MIT (Copyright (c) 2026 dancinlab)
 - `tests/test_selftest.hexa` — 4-sub-command sanity sentinel test
 - `examples/iter_q10_closed_form.md` — n=6 closed-form Q≥10 reproduction note
 - `RELEASE_NOTES_v1.0.0.md`

@@ -210,21 +210,119 @@ fn cmd_dse(a: [str]) {
 }
 
 // ─── subcommand: verify ───
+//
+// Two-tier dispatch:
+//   `hexa-fusion verify`              → 28-item comprehensive (cli/fusion_verify.hexa)
+//   `hexa-fusion verify comprehensive` → same as above (explicit)
+//   `hexa-fusion verify all`          → run every verify/*.hexa, aggregate exit codes
+//   `hexa-fusion verify <sub>`        → run a single verify/*.hexa script
+//
+// Sub-name → script-path mapping is in _verify_script() below; the
+// authoritative inventory lives in VERIFY_SUBS.
+
+let VERIFY_DIR = HF + "/verify"
+
+let VERIFY_SUBS = [
+    "lattice",
+]
+
+fn _verify_script(sub: str) -> str {
+    if sub == "lattice" { return VERIFY_DIR + "/lattice_check.hexa" }
+    return ""
+}
+
+fn _run_one_verifier(sub: str) -> int {
+    let path = _verify_script(sub)
+    if path.len() == 0 {
+        eprintln("hexa-fusion verify: unknown sub '" + sub + "'")
+        return 2
+    }
+    if _file_exists(path) == false {
+        eprintln("hexa-fusion verify: script missing: " + path)
+        return 2
+    }
+    let cmd = "HEXA_FUSION_ROOT=" + shq(HF) + " " +
+              shq(HEXA_BIN) + " run " + shq(path)
+    let result = exec_with_status(cmd + " 2>&1")
+    let stdout = to_string(result[0])
+    let code = result[1]
+    println(stdout)
+    return code
+}
+
+fn _verify_help() {
+    println("hexa-fusion verify — n=6 invariant + per-pillar calculator audits")
+    println("")
+    println("usage: hexa-fusion verify [<sub>]")
+    println("")
+    println("sub:")
+    println("  (no sub)        28-item comprehensive sweep (Carnot/Lawson/Q + ledger sanity)")
+    println("  comprehensive   alias of (no sub)")
+    println("  all             run every verify/*.hexa in sequence (aggregate)")
+    println("  lattice         n=6 σ(6)·φ(6) = n·τ(6) = J₂ = 24 closure across roadmap + 4 pillars")
+    println("")
+    println("exit:")
+    println("  0  selected verifier(s) PASS")
+    println("  1  ≥ 1 verifier FAIL")
+    println("  2  bad sub / missing script")
+}
 
 fn cmd_verify(a: [str]) {
-    let mut extras: [str] = []
-    let mut i = 3
-    while i < a.len() {
-        extras = extras + [a[i]]
-        i = i + 1
+    let n = len(a)
+    let mut sub = ""
+    if n > 3 { sub = a[3] }
+
+    if sub == "--help" || sub == "-h" || sub == "help" {
+        _verify_help()
+        return
     }
-    let raw = _run_module(MOD_VERIFY_CLI, extras)
-    println(raw.trim())
-    if json_mode(a) {
-        let pass = if raw.contains("PASS") { "true" } else { "false" }
-        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"verify\",\"pass\":" + pass + "}")
+
+    if sub == "" || sub == "comprehensive" {
+        let mut extras: [str] = []
+        let mut i = 3
+        while i < a.len() {
+            extras = extras + [a[i]]
+            i = i + 1
+        }
+        let raw = _run_module(MOD_VERIFY_CLI, extras)
+        println(raw.trim())
+        if json_mode(a) {
+            let pass = if raw.contains("PASS") { "true" } else { "false" }
+            println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"verify\",\"pass\":" + pass + "}")
+        }
+        _audit("verify", "", 0)
+        return
     }
-    _audit("verify", "", 0)
+
+    if sub == "all" {
+        let mut pass = 0
+        let mut fail = 0
+        let mut bad = 0
+        for s in VERIFY_SUBS {
+            let code = _run_one_verifier(s)
+            if code == 0 { pass = pass + 1 }
+            else if code == 1 { fail = fail + 1 }
+            else { bad = bad + 1 }
+        }
+        let total = pass + fail + bad
+        println("")
+        println("========================================================================")
+        println("  hexa-fusion verify all — aggregate")
+        println("    PASS:  " + str(pass) + "/" + str(total))
+        println("    FAIL:  " + str(fail) + "/" + str(total))
+        println("    ERROR: " + str(bad)  + "/" + str(total))
+        println("========================================================================")
+        if fail + bad > 0 {
+            _audit("verify all", "", 1)
+            exit(1)
+        }
+        _audit("verify all", "", 0)
+        return
+    }
+
+    let code = _run_one_verifier(sub)
+    _audit("verify " + sub, "", code)
+    if code != 0 { exit(code) }
 }
 
 // ─── subcommand: derivative-module dispatch (sscb-pattern) ───
@@ -391,8 +489,10 @@ fn cmd_subhelp(sub: str) {
         println("  design-space exploration for KSTAR-N6 powerplant scope")
         println("  cost: $0")
     } else if sub == "verify" {
-        println("hexa-fusion verify [--json]")
-        println("  28-item comprehensive verifier sweep (Carnot/Lawson/Q + ledger sanity)")
+        println("hexa-fusion verify [<sub>] [--json]")
+        println("  no sub          → 28-item comprehensive sweep (Carnot/Lawson/Q + ledger sanity)")
+        println("  all             → run every verify/*.hexa in sequence (aggregate)")
+        println("  lattice         → n=6 σ·φ = n·τ = J₂ = 24 closure across roadmap + 4 pillars")
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")

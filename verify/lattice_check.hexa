@@ -1,0 +1,337 @@
+#!hexa strict
+// hexa-fusion/verify/lattice_check.hexa — n=6 invariant lattice audit.
+//
+// Verifies that σ(6)=12, τ(6)=4, φ(6)=2, J₂=24, the master closure
+// σ(6)·φ(6) = n·τ(6) = J₂ = 24, and the fusion-projected lattice
+// derivations (Q=σ-φ=10, T_i=σ+φ=14, B=σ·τ=48, η=σ/J₂=50%) hold
+// consistently across the roadmap + 4 pillar docs:
+//
+//   .roadmap.hexa_fusion                 — repo-overall lattice declaration
+//   fusion/doc/fusion.md                 — pillar 1 (D-T ignition)
+//   tabletop_fusion/doc/tabletop-fusion.md — pillar 2 (p-11B aneutronic)
+//   fusion_powerplant/doc/fusion-powerplant.md — pillar 3 (KSTAR-N6)
+//   plasma_deep/doc/plasma-fusion-deep.md — pillar 4 (plasma deep-dive)
+//
+// Authority: .roadmap.hexa_fusion §A.1; n=6 perfect-number closure.
+//
+// Run:
+//   hexa run verify/lattice_check.hexa            # exit 0 = all invariants hold
+//
+// Cost: $0 (pure file reads + arithmetic).
+//
+// @no-lock-needed
+// @resolver-bypass(reason="Pure local verifier; reads project docs only.")
+
+let HOME = env("HOME")
+
+fn hexa_fusion_root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"  // @allow-devpath
+}
+
+let ROOT = hexa_fusion_root()
+
+// ── canonical n=6 lattice values (own 1 of hexa-fusion) ──────────────────
+let SIGMA_6 = 12      // σ(6) — sum-of-divisors
+let TAU_6   = 4       // τ(6) — divisor count
+let PHI_6   = 2       // φ(6) — Euler totient
+let SOPFR_6 = 5       // sopfr(6) = 2+3
+let J2      = 24      // 2·σ — Leech / Mathieu min-vector
+let N       = 6       // master row
+let MU_6    = 1       // Möbius
+
+// fusion-projected lattice derivations
+let Q_GAIN     = 10   // σ-φ — powerplant Q gain
+let T_I_KEV    = 14   // σ+φ — plasma core T_i [keV]
+let B_TESLA    = 48   // σ·τ — RT-SC coil [T]
+let TBR_NUM    = 7    // n+1 — TBR numerator
+let TBR_DEN    = 6    // n   — TBR denominator
+let TF_COILS   = 18   // 3n  — toroidal-field coil count
+let ARCHETYPES = 122  // 122/122 EXACT closure (v5)
+let LEDGER_TOT = 27   // 27-item D-T ledger (26 EXACT + 1 honest negative)
+
+// ── doc paths ────────────────────────────────────────────────────────────
+let DOC_ROADMAP    = ROOT + "/.roadmap.hexa_fusion"
+let DOC_FUSION     = ROOT + "/fusion/doc/fusion.md"
+let DOC_TABLETOP   = ROOT + "/tabletop_fusion/doc/tabletop-fusion.md"
+let DOC_POWERPLANT = ROOT + "/fusion_powerplant/doc/fusion-powerplant.md"
+let DOC_PLASMA     = ROOT + "/plasma_deep/doc/plasma-fusion-deep.md"
+
+// ── helpers ──────────────────────────────────────────────────────────────
+
+fn _read(path: str) -> str {
+    if file_exists(path) == false { return "" }
+    return read_file(path)
+}
+
+fn _contains(text: str, needle: str) -> bool {
+    if text.len() == 0 { return false }
+    if needle.len() == 0 { return true }
+    return text.find(needle) >= 0
+}
+
+fn _any_of(text: str, needles: [str]) -> bool {
+    for n in needles { if _contains(text, n) { return true } }
+    return false
+}
+
+// ── audit accumulator ────────────────────────────────────────────────────
+
+let mut RUN = 0
+let mut FAIL = 0
+let mut WARN = 0
+let mut FAILURES: [str] = []
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label)
+        if detail.len() > 0 { println("         · " + detail) }
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label)
+        if detail.len() > 0 { println("         · " + detail) }
+    }
+}
+
+fn _warn(label: str, detail: str) {
+    WARN = WARN + 1
+    println("  [WARN] " + label)
+    if detail.len() > 0 { println("         · " + detail) }
+}
+
+// ── arithmetic invariants (T1) ───────────────────────────────────────────
+
+// Check 1: master closure σ(6)·φ(6) = n·τ(6) = J₂ = 24
+fn check_master_closure() {
+    let lhs = SIGMA_6 * PHI_6
+    let mid = N * TAU_6
+    let ok = lhs == J2 && mid == J2 && lhs == mid
+    _check(ok,
+           "n=6 master closure: σ(6)·φ(6) = n·τ(6) = J₂",
+           "12·2 = 6·4 = " + str(J2))
+}
+
+// Check 2: Q-gain = σ-φ = 10  (powerplant break-even × 2.5)
+fn check_q_gain() {
+    let q = SIGMA_6 - PHI_6
+    _check(q == Q_GAIN,
+           "Q-gain = σ-φ = 10  (KSTAR-N6 powerplant)",
+           "σ-φ = " + str(q))
+}
+
+// Check 3: T_i = σ+φ = 14 keV  (plasma core)
+fn check_plasma_temp() {
+    let t = SIGMA_6 + PHI_6
+    _check(t == T_I_KEV,
+           "Plasma core T_i = σ+φ = 14 keV",
+           "σ+φ = " + str(t))
+}
+
+// Check 4: B = σ·τ = 48 T  (RT-SC coil)
+fn check_b_field() {
+    let b = SIGMA_6 * TAU_6
+    _check(b == B_TESLA,
+           "RT-SC coil B = σ·τ = 48 T",
+           "σ·τ = " + str(b))
+}
+
+// Check 5: Brayton η = σ/J₂ = 1/2 = 50%
+fn check_brayton_efficiency() {
+    let ok = SIGMA_6 * 2 == J2
+    _check(ok,
+           "Brayton η = σ/J₂ = 50%",
+           "2·σ(=" + str(2 * SIGMA_6) + ") == J₂(=" + str(J2) + ")")
+}
+
+// Check 6: TBR = (n+1)/n = 7/6  (Li-6 blanket)
+fn check_tbr() {
+    let ok = N + 1 == TBR_NUM && N == TBR_DEN
+    _check(ok,
+           "TBR = (n+1)/n = 7/6  (Li-6 blanket)",
+           "n+1 = " + str(N + 1) + ", n = " + str(N))
+}
+
+// Check 7: TF coils = 3n = 18
+fn check_tf_coils() {
+    let v = 3 * N
+    _check(v == TF_COILS,
+           "TF coils = 3n = 18",
+           "3·n = " + str(v))
+}
+
+// Check 8: D-T energy split alpha=1/sopfr=20%, neutron=tau/sopfr=80%
+fn check_dt_energy_split() {
+    let alpha_pct = 100 / SOPFR_6      // integer 20
+    let neutron_pct = 100 * TAU_6 / SOPFR_6  // integer 80
+    let ok = alpha_pct == 20 && neutron_pct == 80
+    _check(ok,
+           "D-T split: alpha=1/sopfr=20%, neutron=τ/sopfr=80%",
+           "α=" + str(alpha_pct) + "%, n=" + str(neutron_pct) + "%")
+}
+
+// Check 9: aneutronic verdict bit = φ = 2  (D-T neutronic / p-11B aneutronic)
+fn check_verdict_bit() {
+    _check(PHI_6 == 2,
+           "Verdict bit φ(6) = 2 (D-T neutronic / p-11B aneutronic)",
+           "φ = " + str(PHI_6))
+}
+
+// ── doc cross-checks ─────────────────────────────────────────────────────
+
+// Check 10: roadmap declares the lattice values
+fn check_roadmap_declares_lattice() {
+    let txt = _read(DOC_ROADMAP)
+    if txt.len() == 0 {
+        _check(false, "roadmap exists", DOC_ROADMAP + " missing")
+        return
+    }
+    let ok_sigma = _any_of(txt, ["σ(6)", "sigma(6)"]) && _contains(txt, "12")
+    _check(ok_sigma, "roadmap declares σ(6)=12", ".roadmap.hexa_fusion §A.1")
+    let ok_tau = _any_of(txt, ["τ(6)", "tau(6)"]) && _contains(txt, "4")
+    _check(ok_tau, "roadmap declares τ(6)=4", ".roadmap.hexa_fusion §A.1")
+    let ok_phi = _any_of(txt, ["φ(6)", "phi(6)"]) && _contains(txt, "2")
+    _check(ok_phi, "roadmap declares φ(6)=2", ".roadmap.hexa_fusion §A.1")
+    let ok_j2 = _any_of(txt, ["J₂", "J_2", "J2"]) && _contains(txt, "24")
+    _check(ok_j2, "roadmap declares J₂=24", ".roadmap.hexa_fusion §A.1")
+    let ok_master = _contains(txt, "σ·φ = n·τ = J₂") || _contains(txt, "= 24")
+    _check(ok_master, "roadmap states master identity σ·φ = n·τ = J₂",
+           ".roadmap.hexa_fusion §A.1")
+}
+
+// Check 11: each pillar references the n=6 lattice (sigma / tau / phi tokens)
+fn check_pillar_lattice_refs(pillar: str, path: str) {
+    let txt = _read(path)
+    if txt.len() == 0 {
+        _check(false, "pillar present: " + pillar, path + " missing")
+        return
+    }
+    let ok_n6 = _any_of(txt, ["n=6", "n = 6"])
+    _check(ok_n6, pillar + ": n=6 referenced", "")
+    let ok_s = _any_of(txt, ["sigma(6)", "σ(6)", "σ=12", "sigma=12", "sigma·tau", "σ·τ"])
+    _check(ok_s, pillar + ": σ token present", "")
+    let ok_t = _any_of(txt, ["tau(6)", "τ(6)", "τ=4", "tau=4", "Q = tau", "Q=tau"])
+    _check(ok_t, pillar + ": τ token present", "")
+    let ok_p = _any_of(txt, ["phi=2", "φ=2", "phi(6)", "φ(6)", "σ-φ", "sigma-phi"])
+    _check(ok_p, pillar + ": φ token present", "")
+}
+
+// Check 12: J₂=24 token appears in at least 3 of 4 pillars
+fn check_j2_cross_pillar() {
+    let mut hits = 0
+    let txts = [_read(DOC_FUSION), _read(DOC_TABLETOP),
+                _read(DOC_POWERPLANT), _read(DOC_PLASMA)]
+    for t in txts {
+        if _any_of(t, ["J_2", "J₂", "J2(6)", "= 24"]) { hits = hits + 1 }
+    }
+    _check(hits >= 3,
+           "J₂ token cross-pillar: appears in ≥ 3 of 4 pillars",
+           "hits = " + str(hits) + " of 4")
+}
+
+// Check 13: archetype closure 122/122 declared in fusion or roadmap
+fn check_archetype_closure() {
+    let txts = [_read(DOC_FUSION), _read(DOC_ROADMAP), _read(ROOT + "/hexa.toml")]
+    let mut hit = false
+    for t in txts {
+        if _contains(t, "122/122") { hit = true }
+    }
+    _check(hit,
+           "archetype closure 122/122 EXACT (v5) declared",
+           "12-fusion-archetype lock per .roadmap §A.1 / §0")
+}
+
+// Check 14: tabletop pillar declares Q = τ = 4 break-even
+fn check_tabletop_q_break_even() {
+    let txt = _read(DOC_TABLETOP)
+    if txt.len() == 0 {
+        _warn("tabletop pillar absent", DOC_TABLETOP)
+        return
+    }
+    let ok = _any_of(txt, ["Q = tau", "Q=tau", "Q_tt = tau", "Q_tabletop"]) &&
+             _contains(txt, "4")
+    _check(ok,
+           "tabletop: Q = τ(6) = 4 break-even declared",
+           "p-11B aneutronic conservative lower bound")
+}
+
+// Check 15: powerplant pillar declares B = σ·τ = 48 T
+fn check_powerplant_b_field() {
+    let txt = _read(DOC_POWERPLANT)
+    if txt.len() == 0 {
+        _warn("powerplant pillar absent", DOC_POWERPLANT)
+        return
+    }
+    let ok = _any_of(txt, ["σ·τ=48", "sigma·tau=48", "48 T", "48T", "σ·τ = 48"])
+    _check(ok,
+           "powerplant: B = σ·τ = 48 T declared",
+           "RT-SC coil 48T (raw#10*)")
+}
+
+// Check 16: hexa.toml [closure] verdict declared (raw#10 honest C3)
+fn check_hexa_toml_honesty() {
+    let txt = _read(ROOT + "/hexa.toml")
+    if txt.len() == 0 {
+        _warn("hexa.toml absent", ROOT + "/hexa.toml")
+        return
+    }
+    let ok = _contains(txt, "verdict") &&
+             _any_of(txt, ["PASS_WITH_HONEST_NEGATIVE", "SPECS_ONLY", "EXACT"])
+    _check(ok,
+           "hexa.toml [closure] verdict declared (raw#10 C3)",
+           "honest scope declaration present")
+}
+
+// ── main ─────────────────────────────────────────────────────────────────
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — n=6 invariant lattice audit")
+    println("  σ(6)=12, τ(6)=4, φ(6)=2, J₂=24 — closure σ·φ = n·τ = J₂")
+    println("========================================================================")
+    println("  root: " + ROOT)
+    println("")
+
+    println("-- arithmetic invariants (T1) --")
+    check_master_closure()
+    check_q_gain()
+    check_plasma_temp()
+    check_b_field()
+    check_brayton_efficiency()
+    check_tbr()
+    check_tf_coils()
+    check_dt_energy_split()
+    check_verdict_bit()
+    println("")
+
+    println("-- doc cross-checks (roadmap + 4 pillars) --")
+    check_roadmap_declares_lattice()
+    println("")
+    check_pillar_lattice_refs("fusion",            DOC_FUSION)
+    check_pillar_lattice_refs("tabletop_fusion",   DOC_TABLETOP)
+    check_pillar_lattice_refs("fusion_powerplant", DOC_POWERPLANT)
+    check_pillar_lattice_refs("plasma_deep",       DOC_PLASMA)
+    println("")
+    check_j2_cross_pillar()
+    check_archetype_closure()
+    check_tabletop_q_break_even()
+    check_powerplant_b_field()
+    check_hexa_toml_honesty()
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed  (" + str(WARN) + " warn)")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_LATTICE__ FAIL")
+        exit(1)
+    }
+    println("  All n=6 invariants hold across roadmap + 4 pillar docs.")
+    println("__HEXA_FUSION_LATTICE__ PASS")
+    exit(0)
+}

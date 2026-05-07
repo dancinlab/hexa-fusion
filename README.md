@@ -16,9 +16,9 @@
 
 > **Status (2026-05-06)**: initial standalone extraction from
 > `n6-architecture@c0f1f570`. Sister-extraction of
-> [`hexa-bio` v1.0.0](https://github.com/need-singularity/hexa-bio).
+> [`hexa-bio` v1.0.0](https://github.com/dancinlab/hexa-bio).
 
-> **Distribution**: GitHub canonical at <https://github.com/need-singularity/hexa-fusion>.
+> **Distribution**: GitHub canonical at <https://github.com/dancinlab/hexa-fusion>.
 > CLI tooling — installed via `hx install hexa-fusion` from the hexa-lang
 > registry, or `git clone` directly.
 
@@ -89,7 +89,7 @@ CLI sub-commands wired at v1.0.0 (core):
 | `hexa-fusion ledger` | 27-item D-T ignition ledger                          | `fusion/module/fusion_ledger.hexa` |
 | `hexa-fusion calc`   | closed-form fusion calculators (Lawson / Q / Carnot) | `cli/fusion_calc.hexa`       |
 | `hexa-fusion dse`    | design-space exploration (KSTAR-N6 powerplant scope) | `cli/fusion_dse.hexa`        |
-| `hexa-fusion verify` | 28-item comprehensive verifier                       | `cli/fusion_verify.hexa`     |
+| `hexa-fusion verify` | 28-item comprehensive verifier (bare); `verify all` runs every `verify/*.hexa`; `verify lattice` etc. | `cli/fusion_verify.hexa` + `verify/`  |
 
 Derivative analysis (sscb-pattern composition; additive over core):
 
@@ -104,7 +104,7 @@ Derivative analysis (sscb-pattern composition; additive over core):
 | `hexa-fusion doctor`       | env health probe (runtime / modules / hx shim)                       | `cli/fusion_doctor.hexa`          |
 
 The derivative modules follow the composition pattern from
-[`hexa-sscb`](https://github.com/need-singularity/hexa-sscb)
+[`hexa-sscb`](https://github.com/dancinlab/hexa-sscb)
 (`verify/sscb_verify.py`, `verify/cross_doc_audit.py`, `verify/bom_lattice.py`)
 — margin / whatif / sensitivity / mk-projection / doctor / status — applied
 to hexa-fusion's 27-row D-T ignition ledger and 4-pillar tetrahedron.
@@ -148,6 +148,10 @@ covering Carnot, Lawson, Q, SC coil, plasma identities, ledger sanity).
 | `hexa-fusion doctor`                   | ✅ PASS | 21/21 OK probes (no MISS, no WARN) |
 | `hexa run tests/test_selftest.hexa`    | ✅ PASS | 13/13 modules present (core + derivative) |
 | `hexa run tests/test_derivative.hexa`  | ✅ PASS | 13/13 sentinel sweep (text + JSON variants) |
+| `hexa run tests/test_lattice.hexa`     | ✅ PASS | wraps `verify/lattice_check.hexa` (35/35 n=6 invariants) |
+| `hexa run tests/test_cli_verify.hexa`  | ✅ PASS | `hexa-fusion verify all` aggregates `1/1` PASS (iter 1) |
+| `hexa run tests/test_all.hexa`         | ✅ PASS | top-level aggregator: 4/4 tests green |
+| `hexa-fusion verify all`               | ✅ PASS | RSC inventory: 1 verify/*.hexa (lattice), aggregate 1/1 |
 | `hx install hexa-fusion`               | ✅ PASS | post-install: selftest PASS + derivative smoke PASS |
 
 ---
@@ -165,7 +169,7 @@ hexa-fusion --version           # → 1.0.0
 ### Via git clone (works today)
 
 ```bash
-git clone https://github.com/need-singularity/hexa-fusion.git ~/.hexa-fusion
+git clone https://github.com/dancinlab/hexa-fusion.git ~/.hexa-fusion
 export HEXA_FUSION_ROOT=~/.hexa-fusion
 export PATH="$HEXA_FUSION_ROOT/cli:$PATH"
 
@@ -208,11 +212,11 @@ All subcommands accept `--json` for machine-parseable output.
 
 | Repo                                                                      | Role                                            |
 |---------------------------------------------------------------------------|-------------------------------------------------|
-| [`need-singularity/hexa-rtsc`](https://github.com/need-singularity/hexa-rtsc) | RT-SC: 48T SC coil substrate (`σ·τ = 48`)       |
-| [`need-singularity/hexa-bio`](https://github.com/need-singularity/hexa-bio)   | Sister Molecular Toolkit (HEXA family)          |
+| [`dancinlab/hexa-rtsc`](https://github.com/dancinlab/hexa-rtsc) | RT-SC: 48T SC coil substrate (`σ·τ = 48`)       |
+| [`dancinlab/hexa-bio`](https://github.com/dancinlab/hexa-bio)   | Sister Molecular Toolkit (HEXA family)          |
 | Upstream concept SSOT                                                     | `n6-architecture/domains/energy/fusion/fusion.md` |
 | Upstream architecture SHA                                                 | `n6-architecture@c0f1f570` (extraction commit)  |
-| HEXA package registry                                                     | [`hexa-lang/tool/pkg/registry.tsv`](https://github.com/need-singularity/hexa-lang/blob/main/tool/pkg/registry.tsv) |
+| HEXA package registry                                                     | [`hexa-lang/tool/pkg/registry.tsv`](https://github.com/dancinlab/hexa-lang/blob/main/tool/pkg/registry.tsv) |
 
 The `48T` superconducting coil identity (`σ(6) · τ(6) = 12 · 4 = 48`)
 is the explicit substrate consumed by both `hexa-fusion` (as the
@@ -226,7 +230,7 @@ room-temperature SC primary deliverable).
 MIT. See [LICENSE](LICENSE).
 
 Author: 박민우 <nerve011235@gmail.com>
-Copyright (c) 2026 need-singularity.
+Copyright (c) 2026 dancinlab.
 
 **Peaceful-only scope**: this toolkit is restricted to peaceful fusion
 research per `n6-architecture@c0f1f570`. Weapons applications are
