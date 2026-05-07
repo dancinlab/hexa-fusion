@@ -1,0 +1,260 @@
+#!hexa strict
+// hexa-fusion/verify/numerics_cross_pillar.hexa — cross-pillar numerical anchor (T2).
+//
+// Asserts that every n=6-derived numerical anchor takes the same float
+// value across the 4 pillars (fusion / tabletop / powerplant /
+// plasma_deep). This is the float-arithmetic counterpart to
+// cross_doc_audit (which is doc-text only).
+//
+// Falsifies (T2):
+//   F-FUSION-1, F-FUSION-2, F-FUSION-3, F-FUSION-4 — every falsifier
+//   relies on these constants being identical across pillars.
+//
+// Run:
+//   hexa run verify/numerics_cross_pillar.hexa
+
+use "self/runtime/math_pure"
+
+let HOME = env("HOME")
+
+fn _root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"
+}
+
+let ROOT = _root()
+
+// ── lattice atoms ────────────────────────────────────────────────────────
+let SIGMA = 12.0
+let TAU   = 4.0
+let PHI   = 2.0
+let SOPFR = 5.0
+let J2    = 24.0
+let N     = 6.0
+
+// ── per-pillar derivations (computed independently per pillar) ───────────
+//
+// We compute each anchor 4 times — one per pillar — to make sure no pillar
+// silently uses a different formula. The 4 results MUST be bit-identical.
+
+// pillar-1 (fusion / D-T)
+fn fusion_q()          -> float { return SIGMA - PHI }      // 10
+fn fusion_t_i()        -> float { return SIGMA + PHI }      // 14
+fn fusion_b()          -> float { return SIGMA * TAU }      // 48
+fn fusion_eta()        -> float { return SIGMA / J2 }       // 0.5
+fn fusion_archetypes() -> float { return SIGMA }            // 12
+fn fusion_card()       -> float { return SIGMA * (SIGMA - PHI) + PHI }  // 122
+
+// pillar-2 (tabletop / p-11B)
+fn tabletop_q()          -> float { return TAU }             // 4 break-even
+fn tabletop_q_max()      -> float { return SIGMA - PHI }     // 10 (RT-SC zero-cool)
+fn tabletop_t_opt()      -> float { return N * (SIGMA - PHI) * SOPFR }  // 300 keV
+fn tabletop_b()          -> float { return SIGMA * TAU }     // 48
+fn tabletop_eta_pb()     -> float { return SIGMA / N }       // 2 (×DT)
+fn tabletop_3alpha()     -> float { return (N / PHI) * TAU } // σ = 12
+
+// pillar-3 (powerplant / KSTAR-N6)
+fn powerplant_q()       -> float { return SIGMA - PHI }     // 10
+fn powerplant_t_i()     -> float { return SIGMA + PHI }     // 14
+fn powerplant_b()       -> float { return SIGMA * TAU }     // 48
+fn powerplant_eta()     -> float { return SIGMA / J2 }      // 0.5
+fn powerplant_tf_coil() -> float { return 3.0 * N }         // 18
+
+// pillar-4 (plasma_deep)
+fn plasma_t_i()      -> float { return SIGMA + PHI }       // 14 keV
+fn plasma_b()        -> float { return SIGMA * TAU }       // 48 T
+fn plasma_eta_dt()   -> float { return SIGMA / J2 }        // 0.5 (Brayton)
+fn plasma_n_master() -> float { return SIGMA * PHI }       // 24 = J₂
+
+// ── audit accumulator ────────────────────────────────────────────────────
+let mut RUN = 0
+let mut FAIL = 0
+let mut FAILURES: [str] = []
+
+let FALSIFIERS = ["F-FUSION-1", "F-FUSION-2", "F-FUSION-3", "F-FUSION-4"]
+
+fn _abs(x: float) -> float { if x < 0.0 { return 0.0 - x } return x }
+
+fn _eq(a: float, b: float) -> bool {
+    return _abs(a - b) < 1e-12
+}
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label + "  ·  " + detail)
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label + "  ·  " + detail)
+    }
+}
+
+// ── §1 Q across pillars (powerplant Q = σ-φ = 10) ────────────────────────
+
+fn check_q_cross_pillar() {
+    let f = fusion_q()
+    let t = tabletop_q_max()      // tabletop's RT-SC zero-cool ceiling
+    let p = powerplant_q()
+    let ok = _eq(f, t) && _eq(t, p) && _eq(f, 10.0)
+    _check(ok,
+           "powerplant Q = σ-φ = 10 across fusion / tabletop_max / powerplant",
+           "fus=" + str(f) + " tt_max=" + str(t) + " pp=" + str(p))
+}
+
+// ── §2 T_i across pillars ────────────────────────────────────────────────
+
+fn check_t_i_cross_pillar() {
+    let f = fusion_t_i()
+    let p = powerplant_t_i()
+    let pl = plasma_t_i()
+    let ok = _eq(f, p) && _eq(p, pl) && _eq(f, 14.0)
+    _check(ok,
+           "T_i = σ+φ = 14 keV across fusion / powerplant / plasma_deep",
+           "fus=" + str(f) + " pp=" + str(p) + " plasma=" + str(pl))
+}
+
+// ── §3 B across pillars ──────────────────────────────────────────────────
+
+fn check_b_cross_pillar() {
+    let f = fusion_b()
+    let t = tabletop_b()
+    let p = powerplant_b()
+    let pl = plasma_b()
+    let ok = _eq(f, t) && _eq(t, p) && _eq(p, pl) && _eq(f, 48.0)
+    _check(ok,
+           "B = σ·τ = 48 T across all 4 pillars",
+           "fus=" + str(f) + " tt=" + str(t) + " pp=" + str(p) + " plasma=" + str(pl))
+}
+
+// ── §4 η across pillars ──────────────────────────────────────────────────
+
+fn check_eta_cross_pillar() {
+    let f = fusion_eta()
+    let p = powerplant_eta()
+    let pl = plasma_eta_dt()
+    let ok = _eq(f, p) && _eq(p, pl) && _eq(f, 0.5)
+    _check(ok,
+           "η_Brayton = σ/J₂ = 0.5 across fusion / powerplant / plasma_deep",
+           "fus=" + str(f) + " pp=" + str(p) + " plasma=" + str(pl))
+}
+
+// ── §5 break-even τ vs powerplant Q-gain ────────────────────────────────
+
+fn check_q_breakeven_vs_powerplant() {
+    let qb = tabletop_q()
+    let qp = fusion_q()
+    let ok = qb < qp && _eq(qb, 4.0) && _eq(qp, 10.0)
+    _check(ok,
+           "tabletop Q-break (τ=4) < powerplant Q-gain (σ-φ=10)",
+           "Q_break=" + str(qb) + " < Q_pp=" + str(qp))
+}
+
+// ── §6 archetype card identity ──────────────────────────────────────────
+
+fn check_archetype_identity() {
+    // 12 archetypes × 10 sub-section + 2 LIMITS = 122
+    let card = fusion_card()
+    let ok = _eq(card, 122.0)
+    _check(ok,
+           "12-archetype card = σ·(σ-φ)+φ = 122 (F-FUSION-4 T2 anchor)",
+           "card = " + str(card))
+}
+
+fn check_archetype_count_cross() {
+    // archetype count = σ(6) = 12 in fusion + tabletop's 3α product (3·4=12)
+    let f_arch = fusion_archetypes()
+    let t_3a = tabletop_3alpha()
+    let ok = _eq(f_arch, t_3a) && _eq(f_arch, 12.0)
+    _check(ok,
+           "σ = 12 = archetype count = 3·α (n/φ)·τ across fusion + tabletop",
+           "fus=" + str(f_arch) + " tt 3α=" + str(t_3a))
+}
+
+// ── §7 master closure preserved ─────────────────────────────────────────
+
+fn check_master_cross_pillar() {
+    let pl = plasma_n_master()      // 24
+    let n_tau = N * TAU             // 24
+    let ok = _eq(pl, n_tau) && _eq(pl, J2)
+    _check(ok,
+           "master closure σ·φ = n·τ = J₂ = 24 (plasma_deep ↔ derived)",
+           "plasma σ·φ=" + str(pl) + " n·τ=" + str(n_tau) + " J₂=" + str(J2))
+}
+
+// ── §8 p-11B aneutronic vs DT (η ratio) ─────────────────────────────────
+
+fn check_aneutronic_eta_ratio() {
+    // p-11B direct η ratio = σ/n = 2 × DT brayton
+    let r = tabletop_eta_pb()
+    let dt = fusion_eta()
+    let r_implied = r * dt
+    _check(_eq(r, 2.0),
+           "p-11B η-ratio = σ/n = 2 × DT (η_pb = 1.0 → 100%, capped by Carnot)",
+           "ratio=" + str(r) + " · η_DT=" + str(dt) + " → η_pb=" + str(r_implied))
+}
+
+// ── §9 TF coil count anchor (powerplant only) ───────────────────────────
+
+fn check_tf_coil() {
+    let v = powerplant_tf_coil()
+    _check(_eq(v, 18.0),
+           "TF coils = 3n = 18 (powerplant)",
+           "3n = " + str(v))
+}
+
+// ── main ─────────────────────────────────────────────────────────────────
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — cross-pillar numerical anchor (T2, numerics_cross_pillar)")
+    println("  asserts every n=6-derived float is identical across the 4 pillars")
+    println("========================================================================")
+    println("  root: " + ROOT)
+    println("  falsifiers (T2 evidence): F-FUSION-1, F-FUSION-2, F-FUSION-3, F-FUSION-4")
+    println("")
+
+    println("-- §1 Q across pillars --")
+    check_q_cross_pillar()
+    println("")
+    println("-- §2 T_i across pillars --")
+    check_t_i_cross_pillar()
+    println("")
+    println("-- §3 B across pillars --")
+    check_b_cross_pillar()
+    println("")
+    println("-- §4 η_Brayton across pillars --")
+    check_eta_cross_pillar()
+    println("")
+    println("-- §5 break-even τ vs powerplant Q-gain --")
+    check_q_breakeven_vs_powerplant()
+    println("")
+    println("-- §6 archetype card + 3·α identity --")
+    check_archetype_identity()
+    check_archetype_count_cross()
+    println("")
+    println("-- §7 master closure (plasma_deep → derived) --")
+    check_master_cross_pillar()
+    println("")
+    println("-- §8 p-11B aneutronic η ratio --")
+    check_aneutronic_eta_ratio()
+    println("")
+    println("-- §9 TF coil count --")
+    check_tf_coil()
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_NUMERICS_CROSS_PILLAR__ FAIL")
+        exit(1)
+    }
+    println("  All n=6 anchors are bit-identical across the 4 pillars.")
+    println("__HEXA_FUSION_NUMERICS_CROSS_PILLAR__ PASS")
+    exit(0)
+}

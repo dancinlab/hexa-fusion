@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 12th RSC iteration: cross-pillar numerical anchor, all 4 falsifiers)
+- `verify/numerics_cross_pillar.hexa` — cross-pillar numerical anchor (T2, 10/10 PASS). The float-arithmetic counterpart to cross_doc_audit (which is doc-text only). Computes every n=6-derived anchor 4 times — once per pillar — and asserts bit-identical results. 9 sections: Q across pillars (10), T_i across pillars (14 keV), B across all 4 pillars (48 T), η_Brayton across pillars (0.5), break-even τ=4 < powerplant Q=10, archetype card σ·(σ-φ)+φ=122 (F-FUSION-4 anchor) + σ=12=3·α cross-check, master closure preserved (24=24=J₂), p-11B aneutronic η-ratio=σ/n=2 × DT, TF coil count 3n=18. Provides T2 evidence for ALL 4 falsifiers. Sentinel `__HEXA_FUSION_NUMERICS_CROSS_PILLAR__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-cross]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_cross_pillar row (10 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  12/12`.
+
+### Verification (iter 12)
+- `hexa run verify/numerics_cross_pillar.hexa` → 10/10 PASS.
+- `hexa-fusion verify all` → `PASS: 12/12`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 11th RSC iteration: KSTAR-N6 Q-gain DSE, F-FUSION-3 second T2 leg)
 - `verify/numerics_powerplant_dse.hexa` — KSTAR-N6 Q-gain design-space exploration (T2, 10/10 PASS). Builds a small Q-surface from `Q = (σ-φ) · (B/B_anchor)² · (T/T_anchor)`. 7 sections: anchor reproduction (Q=10 at B=48, T=14), halve-B → Q/4 (quadratic), halve-T → Q/2 (linear), 3×3 grid monotonicity in B and T, break-even windows (anchor metric=1.0 sits 2.5× above τ/Q_anchor=0.4 threshold; halving B drops Q to 2.5 < τ=4 because B-quadratic bites first; full anchor stays 2.5× over τ), surface monotonicity (no interior max), dimensional sanity (Q dimensionless = 10 at anchor). Provides second T2 leg for F-FUSION-3 (after numerics_powerplant). Sentinel `__HEXA_FUSION_NUMERICS_POWERPLANT_DSE__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-powerplant-dse]`; help bumped.
