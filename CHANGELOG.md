@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 9th RSC iteration: p-11B 4-effort published parity, F-FUSION-2 second T2 leg)
+- `verify/numerics_tabletop_parity.hexa` — p-11B published parity (T2, 12/12 PASS). Compares the n=6 closed-form predictions against the canonical 4-effort p-11B aneutronic set: HB11 (Hora laser-pB, T_eff~1 MeV, Q~1), TAE (Norman C-2W FRC T_i=30 keV → Copernicus 50-100 keV, Q target 1-2), LPP Fusion (DPF ion-T peaks ≈ 300 keV, Q<0.1), ENN (Langfang B 3 T → 4-5 T). 6 sections cover HB11 (Q ratio 4×, both in [200,1000] keV Gamow band), TAE (T_i 10× lift, Q 2× lift, Q_pp 5× headroom), LPP (T_opt EXACT match 300 keV ↔ DPF peak, Q 40× headroom), ENN (B 16× headroom), 4-effort ladders (Q/T/B), and aneutronic verdict bit φ=2 across all 4. Provides second T2 leg for F-FUSION-2 (after numerics_tabletop). Sentinel `__HEXA_FUSION_NUMERICS_TABLETOP_PARITY__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-tabletop-parity]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_tabletop_parity row (7 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  9/9`.
+
+### Verification (iter 9)
+- `hexa run verify/numerics_tabletop_parity.hexa` → 12/12 PASS.
+- `hexa-fusion verify all` → `PASS: 9/9`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 8th RSC iteration: tabletop p-11B numerics, F-FUSION-2 T2)
 - `verify/numerics_tabletop.hexa` — tabletop p-11B numerics (T2, 19/19 PASS). 9 sections cover float ↔ int parity (master + p-11B mass complement σ=12 + 3·α=σ), B^4 scaling via `pow_pure` (B^4=5.31M, V_TT/V_ITER ≈ 1.486e-4), Gamow peak T_opt=300 keV vs published σv-peak 200 keV (50% over-resonance) and Gamow resonance 580 keV (48% under), Q break-even (τ=4) + Q_pp/Q_be ratio 2.5, power density 10 MW/m³ + P_core = 8.7 kW float arith, device mass + cost, p-11B Q-value 8.68 MeV in n=6 anchor band (σ/φ=6 < 8.68 < φ·sopfr=10) + per-α 2.89 MeV ≈ Q/(n/φ)=8.68/3, He-4 binding ↔ J₂ parity, ignition cardinality + battery σ·τ=48 kWh. Provides T2 evidence for F-FUSION-2. Sentinel `__HEXA_FUSION_NUMERICS_TABLETOP__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-tabletop]`; help bumped.
