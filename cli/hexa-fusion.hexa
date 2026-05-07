@@ -227,13 +227,15 @@ let VERIFY_SUBS = [
     "cross-doc",
     "fusion",
     "tabletop",
+    "numerics-fusion",
 ]
 
 fn _verify_script(sub: str) -> str {
-    if sub == "lattice"   { return VERIFY_DIR + "/lattice_check.hexa" }
-    if sub == "cross-doc" { return VERIFY_DIR + "/cross_doc_audit.hexa" }
-    if sub == "fusion"    { return VERIFY_DIR + "/calc_fusion.hexa" }
-    if sub == "tabletop"  { return VERIFY_DIR + "/calc_tabletop.hexa" }
+    if sub == "lattice"          { return VERIFY_DIR + "/lattice_check.hexa" }
+    if sub == "cross-doc"        { return VERIFY_DIR + "/cross_doc_audit.hexa" }
+    if sub == "fusion"           { return VERIFY_DIR + "/calc_fusion.hexa" }
+    if sub == "tabletop"         { return VERIFY_DIR + "/calc_tabletop.hexa" }
+    if sub == "numerics-fusion"  { return VERIFY_DIR + "/numerics_fusion.hexa" }
     return ""
 }
 
@@ -269,6 +271,7 @@ fn _verify_help() {
     println("  cross-doc       cross-pillar anchor consistency (Q/T_i/B/η/J₂/archetype/ledger/falsifier)")
     println("  fusion          D-T pillar n=6 algebraic derivation (master + fuel + Q + B + Lawson + archetype)")
     println("  tabletop        tabletop p-11B aneutronic n=6 derivation (V + T_opt + Q=τ + power + cost)")
+    println("  numerics-fusion D-T closed-form numerics (T2: math_pure float ↔ int parity, Lawson, Q, Carnot)")
     println("")
     println("exit:")
     println("  0  selected verifier(s) PASS")
@@ -505,6 +508,7 @@ fn cmd_subhelp(sub: str) {
         println("  cross-doc       → cross-pillar anchor consistency audit")
         println("  fusion          → D-T pillar n=6 algebraic derivation (master + fuel + Q + B + Lawson + archetype)")
         println("  tabletop        → tabletop p-11B aneutronic n=6 derivation (V + T_opt + Q=τ + power + cost)")
+        println("  numerics-fusion → D-T closed-form numerics (T2: math_pure float ↔ int parity, Lawson, Q, Carnot)")
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")

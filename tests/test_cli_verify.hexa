@@ -23,7 +23,8 @@ let HEXA = HOME + "/.hx/bin/hexa"
 // iter 2 (2026-05-07): + cross-doc = 2
 // iter 3 (2026-05-07): + fusion = 3
 // iter 4 (2026-05-07): + tabletop = 4
-let EXPECTED_AGG = "PASS:  4/4"
+// iter 5 (2026-05-07): + numerics-fusion = 5
+let EXPECTED_AGG = "PASS:  5/5"
 
 fn shq(s: str) -> str {
     return "'" + s.replace("'", "'\\''") + "'"

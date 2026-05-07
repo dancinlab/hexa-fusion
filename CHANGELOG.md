@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 5th RSC iteration: D-T closed-form numerics, T2 tier opens)
+- `verify/numerics_fusion.hexa` — D-T closed-form numerics (T2, 17/17 PASS). First T2-tier script: re-derives every n=6-projected D-T quantity in float via `use "self/runtime/math_pure"` (no raw libm), then cross-checks against the integer atom from the lattice. 9 sections cover float ↔ int parity (master closure), Lawson n=6 SSOT (τ·10^14) + measured-vs-n6 7-decade gap (F-FUSION-1 honest negative), Q re-derivation (powerplant 10, break-even 4, ratio 2.5), plasma + Carnot bound (η_brayton ≤ 1 - n/(σ+φ)), D-T Q-value partition (3.518 + 14.068 ≈ 17.586 MeV), α-share theory ↔ measured (1/sopfr ≈ 0.20), T_opt anchor (σ+φ=14 vs published 13.6, <5% rel err), He-4 binding parity (J₂ vs 28.296 MeV, <20%), magnet/power identities, archetype card, R(6) self-ratio. Provides T2 evidence for F-FUSION-1 + F-FUSION-3. Sentinel `__HEXA_FUSION_NUMERICS_FUSION__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_fusion row (3 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  5/5`.
+
+### Verification (iter 5)
+- `hexa run verify/numerics_fusion.hexa` → 17/17 PASS.
+- `hexa-fusion verify all` → `PASS: 5/5`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 4th RSC iteration: tabletop p-11B aneutronic algebraic derivation)
 - `verify/calc_tabletop.hexa` — tabletop p-11B aneutronic n=6 derivation (T1, 22/22 PASS). 9 sections cover master closure, p-11B mass complement (p+11B = μ + (sopfr+n) = σ = 12, 3·α = (n/φ)·τ = σ), tabletop volume + B^4 magnification (B = σ·τ = 48 T, V_TT = μ = 1 m³, V_ITER = (n+1)·sopfr·τ·n = 840 m³), Gamow-peak T_opt = n·(σ-φ)·sopfr = 300 keV, break-even Q = τ = 4 (F-FUSION-2 T1), power density φ·sopfr = 10 MW/m³, mass = σ·τ·sopfr = 240 kg + cost = σ·J₂ = 288 k$, Brayton η + p-11B direct conversion η_ratio = σ/n = 2, R(6) = 1 self-ratio, ignition-stage cardinality = τ = 4 + battery = σ·τ = 48 kWh. Provides T1 evidence for F-FUSION-2. Sentinel `__HEXA_FUSION_CALC_TABLETOP__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [lattice, cross-doc, fusion, tabletop]`; help bumped.

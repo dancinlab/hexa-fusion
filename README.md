@@ -151,8 +151,8 @@ covering Carnot, Lawson, Q, SC coil, plasma identities, ledger sanity).
 | `hexa run tests/test_lattice.hexa`     | ✅ PASS | wraps `verify/lattice_check.hexa` (35/35 n=6 invariants) |
 | `hexa run tests/test_cli_verify.hexa`  | ✅ PASS | `hexa-fusion verify all` aggregates `1/1` PASS (iter 1) |
 | `hexa run tests/test_all.hexa`         | ✅ PASS | top-level aggregator: 4/4 tests green |
-| `hexa run tests/test_calculators.hexa` | ✅ PASS | calc_*/numerics_* sentinel sweep (2 cases: calc_fusion + calc_tabletop) |
-| `hexa-fusion verify all`               | ✅ PASS | RSC inventory: 4 verify/*.hexa (lattice + cross-doc + fusion + tabletop), aggregate 4/4 |
+| `hexa run tests/test_calculators.hexa` | ✅ PASS | calc_*/numerics_* sentinel sweep (3 cases: calc_fusion + calc_tabletop + numerics_fusion) |
+| `hexa-fusion verify all`               | ✅ PASS | RSC inventory: 5 verify/*.hexa (lattice + cross-doc + fusion + tabletop + numerics-fusion), aggregate 5/5 |
 | `hx install hexa-fusion`               | ✅ PASS | post-install: selftest PASS + derivative smoke PASS |
 
 ---
