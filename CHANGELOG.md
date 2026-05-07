@@ -5,6 +5,23 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 16th RSC iteration: build pipeline, PDF rebuild for 4 pillars — RSC inventory closes)
+- `build/Makefile` — pandoc + xelatex PDF rebuild for the 4 pillar specs. Targets: `make -C build all` (build all 4 PDFs), `make -C build {fusion,tabletop,powerplant,plasma}` (per-pillar), `make -C build verify` (cross-link to `hexa-fusion verify all` as a regression gate), `make -C build {check,clean,size}`. PANDOC_FLAGS sets a4paper/25mm margin/11pt with TOC depth 2 + colorlinks, soft-includes header.tex if present.
+- `build/header.tex` — pandoc xelatex include-in-header. Soft-guarded `\IfFileExists{...}` per package — degrades to plain pandoc default rather than aborting on missing optional pkgs (fontspec/Menlo, xeCJK + Apple SD Gothic Neo, titlesec, xcolor, fancyvrb).
+- `.gitignore` — added `build/out/` + `build/*.aux` + `build/*.log` (PDFs are build artefacts, not committed).
+
+### Verification (iter 16)
+- `make -C build check` → toolchain ready (pandoc 3.9.0.2 + XeTeX 2026 + hexa 0.1.0-dispatch).
+- `make -C build all` → 4/4 pillar PDFs built (`fusion.pdf` 132K, `tabletop-fusion.pdf` 124K, `fusion-powerplant.pdf` 120K, `plasma-fusion-deep.pdf` 128K).
+
+### Recipe completion — RSC standard inventory closed
+This commit closes the 16-script standard inventory from `~/core/bedrock/docs/runnable_surface_recipe.md` for hexa-fusion:
+  - **T1 algebraic** (4): lattice_check + cross_doc_audit + calc_fusion + calc_tabletop
+  - **T2 numerical** (9): numerics_fusion + numerics_fusion_parity + numerics_fusion_solver + numerics_tabletop + numerics_tabletop_parity + numerics_powerplant + numerics_powerplant_dse + numerics_cross_pillar + numerics_lattice_arithmetic
+  - **META** (2): falsifier_check + lint_numerics
+  - **Build + tests** (5): build/Makefile + build/header.tex + tests/{test_lattice, test_calculators, test_cli_verify, test_all}.hexa
+  - **Closure**: F-FUSION-1/2/3/4 all at 67 % (T1+T2 locked, T3 TBD). 16 commits, 16 iterations, ~5 200 lines added (verify + tests + build), 0 .py.
+
 ### Added (2026-05-08 — 15th RSC iteration: numerics meta-lint, META)
 - `verify/lint_numerics.hexa` — numerics methodology meta-lint (META, 46/46 PASS, all 9 numerics scripts conform). Grep-audits every `verify/numerics_*.hexa` against the 5-invariant regression pattern: (1) imports `self/runtime/math_pure` (no raw libm or `exec` for math), (2) emits unique `__HEXA_FUSION_<NAME>__ PASS` sentinel, (3) declares `FALSIFIERS` list (named retract conditions), (4) exits 0 on PASS, (5) carries per-section `RUN` / `FAIL` accounting counters. Plus an inventory-completeness check (NUMERICS_SCRIPTS list count == on-disk count). Each new numerics_*.hexa file must be added to NUMERICS_SCRIPTS — drift surface kept tiny in exchange for zero runtime dependencies. 6 falsifiers self-declared. Sentinel `__HEXA_FUSION_LINT_NUMERICS__ PASS — all 9 numerics scripts conform`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., lint-numerics]`; help bumped.

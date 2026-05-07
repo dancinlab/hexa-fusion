@@ -2,8 +2,11 @@
 state/
 *.log
 
-# build outputs
+# build outputs (pandoc PDF rebuild)
+build/out/
 build/*.pdf
+build/*.aux
+build/*.log
 
 # editor backup
 *.bak
