@@ -67,6 +67,7 @@ let NUMERICS_SCRIPTS = [
     "numerics_fusion.hexa",
     "numerics_fusion_parity.hexa",
     "numerics_fusion_solver.hexa",
+    "numerics_fusion_burnup.hexa",
     "numerics_tabletop.hexa",
     "numerics_tabletop_parity.hexa",
     "numerics_powerplant.hexa",

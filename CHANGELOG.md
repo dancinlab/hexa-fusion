@@ -5,6 +5,18 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 17th RSC iteration: numerics_fusion_burnup, F-FUSION-1 T2×3 stack)
+- `verify/numerics_fusion_burnup.hexa` — D-T burnup integral (T2, third leg of F-FUSION-1). Where numerics_fusion (T2 #1) re-derives the closed-form Lawson identity in float and numerics_fusion_solver (T2 #2) integrates the 0D burn ODE step-by-step via RK2, this script closes the burnup *integral* — the time-integrated fusion yield over a finite burn window — using Simpson's composite rule and cross-checks it against the n_D(t) = N₀/(1 + N₀·<σv>·t) closed form. Three independent integrators agree (analytic + Simpson + trapezoidal); Simpson dominates trapezoid (4th-order h-refinement). Mass conservation, closed-form burnup ladder (B(τ)=0.5, B(2τ)=2/3, B(9τ)=0.9), α/neutron channel partition (1/sopfr = 0.20 anchor), energy-density anchors (148 MJ/m³ total, 29.5 MJ/m³ α), lattice anchors (R(0)=N₀²·<σv>=1.1e18, σ·φ=J₂=24) all verified. Sentinel `__HEXA_FUSION_NUMERICS_FUSION_BURNUP__ PASS — 16/16 checks passed`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion-burnup, ...]`; `_verify_script` mapping + `_verify_help` + `cmd_subhelp("verify")` lines bumped.
+- `verify/falsifier_check.hexa` — `F1_T2_SCRIPTS` extended to 3 entries (numerics_fusion + numerics_fusion_solver + numerics_fusion_burnup). F-FUSION-1 closure stays 67% (T1 + T2 ✓), but T2 stack depth bumps from ×2 to ×3 — sat-1 progress for F-FUSION-1.
+- `verify/lint_numerics.hexa` — `NUMERICS_SCRIPTS` inventory bumped to 10 entries.
+- `tests/test_calculators.hexa` — added `numerics_fusion_burnup.hexa|__HEXA_FUSION_NUMERICS_FUSION_BURNUP__ PASS` row.
+- `tests/test_cli_verify.hexa` — `EXPECTED_AGG = "PASS:  16/16"` (was 15/15).
+
+### Verification (iter 17)
+- `hexa run verify/numerics_fusion_burnup.hexa` → 16/16 PASS standalone (Simpson rel err 8.5e-9, trapezoid 5.2e-4, both well under 1e-3 / 5e-3 tolerances; Simpson h-refinement: err(N=128) ≤ err(N=64), ~16× drop expected for 4th-order).
+- Note: full `hexa-fusion verify all` aggregate skipped this iteration due to system-level fork saturation (~3000+ stale `hexa.real` interp processes from `dev.hexa-lang.hexa-runtime-{watcher,sweeper,runaway-watcher}` launchd watchers). The standalone PASS via direct `/Users/ghost/core/hexa-lang/build/hexa_interp` invocation confirms the new script is correct; meta-lint (`NUMERICS_SCRIPTS` list bumped to 10) and falsifier registry (`F1_T2_SCRIPTS` bumped to 3 entries) edits are static and verified by inspection.
+
 ### Added (2026-05-08 — 16th RSC iteration: build pipeline, PDF rebuild for 4 pillars — RSC inventory closes)
 - `build/Makefile` — pandoc + xelatex PDF rebuild for the 4 pillar specs. Targets: `make -C build all` (build all 4 PDFs), `make -C build {fusion,tabletop,powerplant,plasma}` (per-pillar), `make -C build verify` (cross-link to `hexa-fusion verify all` as a regression gate), `make -C build {check,clean,size}`. PANDOC_FLAGS sets a4paper/25mm margin/11pt with TOC depth 2 + colorlinks, soft-includes header.tex if present.
 - `build/header.tex` — pandoc xelatex include-in-header. Soft-guarded `\IfFileExists{...}` per package — degrades to plain pandoc default rather than aborting on missing optional pkgs (fontspec/Menlo, xeCJK + Apple SD Gothic Neo, titlesec, xcolor, fancyvrb).

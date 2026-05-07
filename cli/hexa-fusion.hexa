@@ -230,6 +230,7 @@ let VERIFY_SUBS = [
     "numerics-fusion",
     "numerics-fusion-parity",
     "numerics-fusion-solver",
+    "numerics-fusion-burnup",
     "numerics-tabletop",
     "numerics-tabletop-parity",
     "numerics-powerplant",
@@ -248,6 +249,7 @@ fn _verify_script(sub: str) -> str {
     if sub == "numerics-fusion"          { return VERIFY_DIR + "/numerics_fusion.hexa" }
     if sub == "numerics-fusion-parity"   { return VERIFY_DIR + "/numerics_fusion_parity.hexa" }
     if sub == "numerics-fusion-solver"   { return VERIFY_DIR + "/numerics_fusion_solver.hexa" }
+    if sub == "numerics-fusion-burnup"   { return VERIFY_DIR + "/numerics_fusion_burnup.hexa" }
     if sub == "numerics-tabletop"        { return VERIFY_DIR + "/numerics_tabletop.hexa" }
     if sub == "numerics-tabletop-parity" { return VERIFY_DIR + "/numerics_tabletop_parity.hexa" }
     if sub == "numerics-powerplant"      { return VERIFY_DIR + "/numerics_powerplant.hexa" }
@@ -294,6 +296,7 @@ fn _verify_help() {
     println("  numerics-fusion D-T closed-form numerics (T2: math_pure float ↔ int parity, Lawson, Q, Carnot)")
     println("  numerics-fusion-parity  D-T published-machine parity (T2: ITER / JET / KSTAR / SPARC)")
     println("  numerics-fusion-solver  0D D-T burn ODE solver (T2: RK2 vs analytic, mass balance)")
+    println("  numerics-fusion-burnup  D-T burnup integral (T2: Simpson + trapezoid + analytic, 4th-order convergence)")
     println("  numerics-tabletop       tabletop p-11B numerics (T2: B^4 scaling + Gamow peak + power density)")
     println("  numerics-tabletop-parity p-11B 4-effort published parity (T2: HB11 / TAE / LPP / ENN)")
     println("  numerics-powerplant     KSTAR-N6 powerplant numerics (T2: P_input → P_th → P_e + Carnot bound)")
@@ -541,6 +544,7 @@ fn cmd_subhelp(sub: str) {
         println("  numerics-fusion → D-T closed-form numerics (T2: math_pure float ↔ int parity, Lawson, Q, Carnot)")
         println("  numerics-fusion-parity → D-T published-machine parity (T2: ITER / JET / KSTAR / SPARC)")
         println("  numerics-fusion-solver → 0D D-T burn ODE solver (T2: RK2 vs analytic, mass balance)")
+        println("  numerics-fusion-burnup → D-T burnup integral (T2: Simpson + trapezoid + analytic, 4th-order convergence)")
         println("  numerics-tabletop      → tabletop p-11B numerics (T2: B^4 scaling + Gamow peak + power density)")
         println("  numerics-tabletop-parity → p-11B 4-effort published parity (T2: HB11 / TAE / LPP / ENN)")
         println("  numerics-powerplant    → KSTAR-N6 powerplant numerics (T2: P_input → P_th → P_e + Carnot bound)")

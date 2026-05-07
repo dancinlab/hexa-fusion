@@ -70,7 +70,7 @@ fn _check(ok: bool, label: str, detail: str) {
 let F1_ID            = "F-FUSION-1"
 let F1_RETRACT       = "lawson_triple closed-form τ·10^(σ+φ)=4·10^14 retracted"
 let F1_T1_SCRIPTS    = ["calc_fusion.hexa"]
-let F1_T2_SCRIPTS    = ["numerics_fusion.hexa", "numerics_fusion_solver.hexa"]
+let F1_T2_SCRIPTS    = ["numerics_fusion.hexa", "numerics_fusion_solver.hexa", "numerics_fusion_burnup.hexa"]
 let F1_T3_SCRIPTS: [str] = []
 let F1_T3_DESC       = "live ITER / SPARC / KSTAR DT plasma feed within 1 decade of closed form"
 
