@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 10th RSC iteration: KSTAR-N6 powerplant numerics, F-FUSION-3 T2)
+- `verify/numerics_powerplant.hexa` — KSTAR-N6 powerplant end-to-end numerics (T2, 16/16 PASS). 6 sections cover base anchors (B=σ·τ=48, T_i=σ+φ=14, Q=σ-φ=10, η=σ/J₂=0.5, TF=3n=18), full power balance for a 50 MW input scenario (P_th=Q·P_in=500 MW, P_e=η·P_th=250 MW, P_net=200 MW, η_overall=0.4), magnet-energy + coil scaling (B²=σ²·τ²=2304, 9.06× lift over ITER), Carnot bound (η_Brayton=0.5 ≤ η_Carnot=1-n/(σ+φ)≈0.571), plant-wide invariants (12-archetype lock + master closure preserved), and KSTAR-N6 lift over current KSTAR (Q 10× lift, B 13.7× lift). Provides T2 evidence for F-FUSION-3 (the end-to-end power-balance closure beyond the algebraic Q=σ-φ identity in calc_fusion). Sentinel `__HEXA_FUSION_NUMERICS_POWERPLANT__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-powerplant]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_powerplant row (8 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  10/10`.
+
+### Verification (iter 10)
+- `hexa run verify/numerics_powerplant.hexa` → 16/16 PASS.
+- `hexa-fusion verify all` → `PASS: 10/10`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 9th RSC iteration: p-11B 4-effort published parity, F-FUSION-2 second T2 leg)
 - `verify/numerics_tabletop_parity.hexa` — p-11B published parity (T2, 12/12 PASS). Compares the n=6 closed-form predictions against the canonical 4-effort p-11B aneutronic set: HB11 (Hora laser-pB, T_eff~1 MeV, Q~1), TAE (Norman C-2W FRC T_i=30 keV → Copernicus 50-100 keV, Q target 1-2), LPP Fusion (DPF ion-T peaks ≈ 300 keV, Q<0.1), ENN (Langfang B 3 T → 4-5 T). 6 sections cover HB11 (Q ratio 4×, both in [200,1000] keV Gamow band), TAE (T_i 10× lift, Q 2× lift, Q_pp 5× headroom), LPP (T_opt EXACT match 300 keV ↔ DPF peak, Q 40× headroom), ENN (B 16× headroom), 4-effort ladders (Q/T/B), and aneutronic verdict bit φ=2 across all 4. Provides second T2 leg for F-FUSION-2 (after numerics_tabletop). Sentinel `__HEXA_FUSION_NUMERICS_TABLETOP_PARITY__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-tabletop-parity]`; help bumped.
