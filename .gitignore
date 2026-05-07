@@ -1,5 +1,8 @@
 # runtime artifacts (audit log, markers) — never committed
-state/
+state/*
+# but DO commit T3-empirical scaffolds (interface stubs for Stage-1+ live feeds)
+!state/ITER_OPS_API.hexa
+!state/KSTAR_PLASMA_LOG.hexa
 *.log
 
 # build outputs (pandoc PDF rebuild)

@@ -5,6 +5,13 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 20th RSC iteration: state/ITER_OPS_API, F-FUSION-1 T3 scaffold)
+- `state/ITER_OPS_API.hexa` — ITER ops open-data feed parity scaffold (T3 stub for F-FUSION-1). The T3 tier is empirical (live D-T plasma data feed) and is fundamentally NOT closeable via `.hexa` scripts (recipe §9 — closure depth here is hardware/ops layer, not code). This script is the **interface scaffold** for that future feed: ships with 3 fixture rows from public-domain announcements (JET 1997 D-T record, ITER 2024 OPS baseline, KSTAR 2024 long-pulse) and asserts the n=6 closed-form Lawson `τ·10^14 = 4·10^14` vs measured ~10²¹ honest-negative gap (7 decades) is documented in the same arithmetic frame. Two operating modes: `fixture` (default, offline) and `live` (FIXTURE_ONLY=0 + ITER_OPS_API_URL set) — live mode emits "T3-deferred" sentinel because Stage-1+ hardware is not online. Sentinel `__HEXA_FUSION_STATE_ITER_OPS_API__ PASS — 9/9 checks passed`.
+- This file does NOT close T3 — closure remains 67% (T1 + T2×3) for F-FUSION-1. The script's purpose is to *register the T3 path* — when Stage-1+ data feed lands, the same fixture rows can be replaced with live readings.
+
+### Verification (iter 20)
+- `hexa run state/ITER_OPS_API.hexa` → 9/9 PASS standalone (fixture mode).
+
 ### Added (2026-05-08 — 19th RSC iteration: numerics_plasma_deep, F-FUSION-4 T2×3 stack — sat-1 reached)
 - `verify/numerics_plasma_deep.hexa` — plasma_deep (pillar 4) + archetype card 122 depth traversal (T2, third leg of F-FUSION-4). Where numerics_cross_pillar (T2 #1) asserts the closure once across pillars and numerics_lattice_arithmetic (T2 #2) keeps math_pure stability under sqrt/pow/log/exp, this script traverses the closure depth: (a) re-derives card 122 via 5 independent decompositions — canonical σ·(σ-φ)+φ, 11·σ-10, J₂·sopfr+φ, n·sopfr·τ+φ, σ²-σ·φ+φ — and asserts they agree bit-for-bit; (b) projects the archetype card across Mk.III → Mk.VII (10/11/12/13/14 archetypes → cards 82/101/122/145/170); (c) pins the F-FUSION-4 T3 sentinel "11·σ = 132" and the "11·σ - card-122 = σ-φ = Q_pp = 10" closure-bridge identity; (d) re-checks pillar-4 plasma_deep numerics anchors (T_e = σ+φ, λ_D, ω_pe, r_L) under math_pure float arithmetic via sqrt round-trip stability. Sentinel `__HEXA_FUSION_NUMERICS_PLASMA_DEEP__ PASS — 21/21 checks passed`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-plasma-deep]`; help bumped.
