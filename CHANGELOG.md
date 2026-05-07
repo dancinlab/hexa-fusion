@@ -5,6 +5,16 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 15th RSC iteration: numerics meta-lint, META)
+- `verify/lint_numerics.hexa` — numerics methodology meta-lint (META, 46/46 PASS, all 9 numerics scripts conform). Grep-audits every `verify/numerics_*.hexa` against the 5-invariant regression pattern: (1) imports `self/runtime/math_pure` (no raw libm or `exec` for math), (2) emits unique `__HEXA_FUSION_<NAME>__ PASS` sentinel, (3) declares `FALSIFIERS` list (named retract conditions), (4) exits 0 on PASS, (5) carries per-section `RUN` / `FAIL` accounting counters. Plus an inventory-completeness check (NUMERICS_SCRIPTS list count == on-disk count). Each new numerics_*.hexa file must be added to NUMERICS_SCRIPTS — drift surface kept tiny in exchange for zero runtime dependencies. 6 falsifiers self-declared. Sentinel `__HEXA_FUSION_LINT_NUMERICS__ PASS — all 9 numerics scripts conform`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., lint-numerics]`; help bumped.
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  15/15`.
+
+### Verification (iter 15)
+- `hexa run verify/lint_numerics.hexa` → 46/46 PASS (9 scripts × 5 invariants + 1 inventory check).
+- `hexa-fusion verify all` → `PASS: 15/15`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-08 — 14th RSC iteration: F-FUSION-1/2/3/4 closure tracker, META)
 - `verify/falsifier_check.hexa` — preregistered falsifier checklist + closure-progress tracker (META, 17/17 PASS, all 4 falsifiers at 67% closure). Surfaces .roadmap.hexa_fusion §A.4 declarations as a pre-flight checklist with status, the experiment that would close each one out, AND closure progress (T1 algebraic / T2 numerical / T3 empirical evidence tiers landed). closure_pct = tiers_complete / 3, capped to 67% until empirical T3 lands. Closure snapshot:
   - **F-FUSION-1** (lawson_triple closed-form): T1 ✓ + T2 ×2 ✓ (numerics_fusion + numerics_fusion_solver), T3 TBD = 67%

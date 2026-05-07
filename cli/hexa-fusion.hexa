@@ -237,6 +237,7 @@ let VERIFY_SUBS = [
     "numerics-cross",
     "numerics-lattice",
     "falsifier",
+    "lint-numerics",
 ]
 
 fn _verify_script(sub: str) -> str {
@@ -254,6 +255,7 @@ fn _verify_script(sub: str) -> str {
     if sub == "numerics-cross"           { return VERIFY_DIR + "/numerics_cross_pillar.hexa" }
     if sub == "numerics-lattice"         { return VERIFY_DIR + "/numerics_lattice_arithmetic.hexa" }
     if sub == "falsifier"                { return VERIFY_DIR + "/falsifier_check.hexa" }
+    if sub == "lint-numerics"            { return VERIFY_DIR + "/lint_numerics.hexa" }
     return ""
 }
 
@@ -299,6 +301,7 @@ fn _verify_help() {
     println("  numerics-cross          cross-pillar numerical anchor (T2: every n=6 float identical across 4 pillars)")
     println("  numerics-lattice        math_pure stability floor (T2: sqrt/pow/log/exp on n=6 anchors < 1e-9 rel err)")
     println("  falsifier               F-FUSION-1/2/3/4 closure-progress tracker (META: 3-tier ladder %)")
+    println("  lint-numerics           every numerics_*.hexa conforms to 5-invariant regression pattern (META)")
     println("")
     println("exit:")
     println("  0  selected verifier(s) PASS")
@@ -545,6 +548,7 @@ fn cmd_subhelp(sub: str) {
         println("  numerics-cross          → cross-pillar numerical anchor (T2: every n=6 float identical across 4 pillars)")
         println("  numerics-lattice        → math_pure stability floor (T2: sqrt/pow/log/exp on n=6 anchors < 1e-9 rel err)")
         println("  falsifier               → F-FUSION-1/2/3/4 closure-progress tracker (META)")
+        println("  lint-numerics           → every numerics_*.hexa conforms to 5-invariant regression pattern (META)")
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")

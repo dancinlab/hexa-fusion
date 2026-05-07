@@ -33,7 +33,8 @@ let HEXA = HOME + "/.hx/bin/hexa"
 // iter 12 (2026-05-07): + numerics-cross           = 12
 // iter 13 (2026-05-07): + numerics-lattice         = 13
 // iter 14 (2026-05-08): + falsifier                = 14
-let EXPECTED_AGG = "PASS:  14/14"
+// iter 15 (2026-05-08): + lint-numerics            = 15
+let EXPECTED_AGG = "PASS:  15/15"
 
 fn shq(s: str) -> str {
     return "'" + s.replace("'", "'\\''") + "'"
