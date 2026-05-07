@@ -21,6 +21,7 @@ let HEXA = HOME + "/.hx/bin/hexa"
 // (verify/<file>, expected_sentinel)
 let CASES = [
     "calc_fusion.hexa|__HEXA_FUSION_CALC_FUSION__ PASS",
+    "calc_tabletop.hexa|__HEXA_FUSION_CALC_TABLETOP__ PASS",
 ]
 
 fn shq(s: str) -> str {

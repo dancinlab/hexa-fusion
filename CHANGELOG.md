@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 4th RSC iteration: tabletop p-11B aneutronic algebraic derivation)
+- `verify/calc_tabletop.hexa` — tabletop p-11B aneutronic n=6 derivation (T1, 22/22 PASS). 9 sections cover master closure, p-11B mass complement (p+11B = μ + (sopfr+n) = σ = 12, 3·α = (n/φ)·τ = σ), tabletop volume + B^4 magnification (B = σ·τ = 48 T, V_TT = μ = 1 m³, V_ITER = (n+1)·sopfr·τ·n = 840 m³), Gamow-peak T_opt = n·(σ-φ)·sopfr = 300 keV, break-even Q = τ = 4 (F-FUSION-2 T1), power density φ·sopfr = 10 MW/m³, mass = σ·τ·sopfr = 240 kg + cost = σ·J₂ = 288 k$, Brayton η + p-11B direct conversion η_ratio = σ/n = 2, R(6) = 1 self-ratio, ignition-stage cardinality = τ = 4 + battery = σ·τ = 48 kWh. Provides T1 evidence for F-FUSION-2. Sentinel `__HEXA_FUSION_CALC_TABLETOP__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [lattice, cross-doc, fusion, tabletop]`; help bumped.
+- `tests/test_calculators.hexa` — added calc_tabletop row.
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  4/4`.
+
+### Verification (iter 4)
+- `hexa run verify/calc_tabletop.hexa` → 22/22 PASS.
+- `hexa-fusion verify all` → `PASS: 4/4`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 3rd RSC iteration: D-T pillar algebraic derivation + test_calculators scaffolding)
 - `verify/calc_fusion.hexa` — D-T pillar n=6 algebraic derivation (T1, 21/21 PASS). 9 sections cover master closure, fuel quartet (D=φ, T=n/φ, α=τ, Li-6=n), energy partition (α=1/sopfr=20%, n=τ/sopfr=80%), plasma+Q (T_i=σ+φ=14, Q=σ-φ=10), magnet+coil (B=σ·τ=48 with J₂²/σ factorisation cross-check, TF=3n=18), Brayton η=σ/J₂=50% + p-11B η_ratio=σ/n=2, TBR=(n+1)/n=7/6, Lawson closed-form (exponent=σ+φ=14, prefactor=τ=4), and 12-archetype card (σ·(σ-φ)+φ=122). Provides T1 evidence for F-FUSION-1 (Lawson) and F-FUSION-3 (powerplant Q). Sentinel `__HEXA_FUSION_CALC_FUSION__ PASS`.
 - `tests/test_calculators.hexa` — calc_*/numerics_* sentinel sweep scaffolding (1 case at iter 3; bumps per iter). Sentinel `__HEXA_FUSION_TEST_CALCULATORS__ PASS`.
