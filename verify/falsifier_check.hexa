@@ -1,0 +1,227 @@
+#!hexa strict
+// hexa-fusion/verify/falsifier_check.hexa — preregistered falsifier checklist
+// + closure-progress tracker.
+//
+// .roadmap.hexa_fusion §A.4 declares 4 falsifiers (F-FUSION-1/2/3/4).
+// This script surfaces them as a pre-flight checklist with status,
+// the experiment that would close each one out, AND closure progress
+// (which evidence tiers — algebraic / numerical / empirical — have
+// landed). PASS = all falsifiers declared in roadmap; UNVERIFIED status
+// is acceptable as long as the closed-form algebra and closed-form
+// numerics tiers are in place. FAIL = falsifier missing from roadmap
+// (someone deleted a falsifier without amending §A.4) OR an evidence
+// tier marked done has no corresponding verify script on disk.
+//
+// Evidence tiers, in order of accumulation:
+//   T1 — algebraic (n=6 closed-form derivation)            verify/calc_*.hexa
+//   T2 — numerical (closed-form via math_pure)             verify/numerics_*.hexa
+//   T3 — empirical (real plasma / coil / DT data feed)     STAGE-1+ TBD
+//
+// closure_pct = tiers_complete / 3, capped to 67% until empirical lands.
+//
+// Run:
+//   hexa run verify/falsifier_check.hexa
+
+let HOME = env("HOME")
+
+fn _root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"
+}
+
+let ROOT = _root()
+let DOC_ROADMAP = ROOT + "/.roadmap.hexa_fusion"
+let VERIFY_DIR  = ROOT + "/verify"
+
+fn _read(p: str) -> str {
+    if file_exists(p) == false { return "" }
+    return read_file(p)
+}
+
+fn _has(t: str, s: str) -> bool {
+    if t.len() == 0 { return false }
+    return t.find(s) >= 0
+}
+
+fn _exists(p: str) -> bool { return file_exists(p) }
+
+let mut RUN = 0
+let mut FAIL = 0
+let mut FAILURES: [str] = []
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label)
+        if detail.len() > 0 { println("         · " + detail) }
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label)
+        if detail.len() > 0 { println("         · " + detail) }
+    }
+}
+
+// ── falsifier registry (must match .roadmap.hexa_fusion §A.4) ───────────
+
+let F1_ID            = "F-FUSION-1"
+let F1_RETRACT       = "lawson_triple closed-form τ·10^(σ+φ)=4·10^14 retracted"
+let F1_T1_SCRIPTS    = ["calc_fusion.hexa"]
+let F1_T2_SCRIPTS    = ["numerics_fusion.hexa", "numerics_fusion_solver.hexa"]
+let F1_T3_SCRIPTS: [str] = []
+let F1_T3_DESC       = "live ITER / SPARC / KSTAR DT plasma feed within 1 decade of closed form"
+
+let F2_ID            = "F-FUSION-2"
+let F2_RETRACT       = "tabletop p-11B Q=τ=4 break-even closed-form retracted"
+let F2_T1_SCRIPTS    = ["calc_tabletop.hexa"]
+let F2_T2_SCRIPTS    = ["numerics_tabletop.hexa", "numerics_tabletop_parity.hexa"]
+let F2_T3_SCRIPTS: [str] = []
+let F2_T3_DESC       = "real tabletop p-11B 1 m³ Q=4 demonstration (HB11/TAE/LPP/ENN)"
+
+let F3_ID            = "F-FUSION-3"
+let F3_RETRACT       = "KSTAR-N6 RT-SC 48T → Q=σ-φ=10 powerplant closed-form retracted"
+let F3_T1_SCRIPTS    = ["calc_fusion.hexa"]
+let F3_T2_SCRIPTS    = ["numerics_fusion_parity.hexa", "numerics_powerplant.hexa", "numerics_powerplant_dse.hexa"]
+let F3_T3_SCRIPTS: [str] = []
+let F3_T3_DESC       = "real RT-SC 48T coil + plasma demonstrator delivers Q ≥ 10"
+
+let F4_ID            = "F-FUSION-4"
+let F4_RETRACT       = "12-archetype 122/122 EXACT closure (σ·(σ-φ)+φ=122) retracted"
+let F4_T1_SCRIPTS    = ["calc_fusion.hexa"]
+let F4_T2_SCRIPTS    = ["numerics_cross_pillar.hexa", "numerics_lattice_arithmetic.hexa"]
+let F4_T3_SCRIPTS: [str] = []
+let F4_T3_DESC       = "extended archetype set 122 → 132 = 11·σ pattern preserved"
+
+fn check_roadmap_declares(token: str) -> bool {
+    return _has(_read(DOC_ROADMAP), token)
+}
+
+fn _all_present(scripts: [str]) -> bool {
+    for s in scripts {
+        if _exists(VERIFY_DIR + "/" + s) == false { return false }
+    }
+    return scripts.len() > 0
+}
+
+fn _closure_pct(t1_ok: bool, t2_ok: bool, t3_ok: bool) -> int {
+    let mut n = 0
+    if t1_ok { n = n + 1 }
+    if t2_ok { n = n + 1 }
+    if t3_ok { n = n + 1 }
+    if n == 0 { return 0 }
+    if n == 1 { return 33 }
+    if n == 2 { return 67 }
+    return 100
+}
+
+fn _emit_tier_line(label: str, scripts: [str]) {
+    let ok = _all_present(scripts)
+    let mark = if ok { "OK " } else { "x  " }
+    let mut paths = ""
+    let mut i = 0
+    while i < scripts.len() {
+        if i > 0 { paths = paths + " + " }
+        paths = paths + "verify/" + scripts[i]
+        i = i + 1
+    }
+    println("         " + label + " " + mark + "  " + paths)
+}
+
+fn _emit_falsifier(id: str, retract: str,
+                   t1_scripts: [str], t2_scripts: [str],
+                   t3_scripts: [str], t3_desc: str) {
+    let t1_ok = _all_present(t1_scripts)
+    let t2_ok = _all_present(t2_scripts)
+    let t3_ok = t3_scripts.len() > 0 && _all_present(t3_scripts)
+    let pct = _closure_pct(t1_ok, t2_ok, t3_ok)
+    let status_str = if pct == 100 { "FULL closure (algebra + numerics + empirical)" }
+                     else if pct >= 67 { "PARTIAL closure (algebra + numerics)" }
+                     else if pct >= 33 { "EARLY closure (algebra only)" }
+                     else { "UNVERIFIED" }
+    let t2_count = t2_scripts.len()
+    let t3_count = t3_scripts.len()
+    println("    + " + id + ": " + retract)
+    println("         closure:  " + str(pct) + "%   (" + status_str + ")  [T2 x" +
+            str(t2_count) + ", T3 x" + str(t3_count) + "]")
+    _emit_tier_line("T1 algebra:  ", t1_scripts)
+    _emit_tier_line("T2 numerics: ", t2_scripts)
+    if t3_ok {
+        _emit_tier_line("T3 empirical:", t3_scripts)
+    } else {
+        println("         T3 empirical: x   " + t3_desc)
+    }
+}
+
+fn check_tier_scripts_present(fid: str, label: str, scripts: [str]) {
+    for s in scripts {
+        let path = VERIFY_DIR + "/" + s
+        let ok = _exists(path)
+        _check(ok, fid + " " + label + " — " + s + " present on disk",
+               "expected at " + path)
+    }
+}
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — preregistered falsifier checklist + closure progress")
+    println("========================================================================")
+    println("  source: " + DOC_ROADMAP)
+    println("")
+    println("  Tiers of evidence, in order of accumulation:")
+    println("    T1  algebraic     n=6 closed-form derivation   (verify/calc_*.hexa)")
+    println("    T2  numerical     closed-form via math_pure    (verify/numerics_*.hexa)")
+    println("    T3  empirical     real plasma / coil / DT      (Stage-1+ TBD)")
+    println("")
+    println("  At v1.1.0-pre: T1 + T2 are landed for all 4 falsifiers (67% closure).")
+    println("  T3 closes only when empirical Stage-1+ build runs.")
+    println("")
+
+    println("  Falsifiers declared:")
+    _emit_falsifier(F1_ID, F1_RETRACT, F1_T1_SCRIPTS, F1_T2_SCRIPTS, F1_T3_SCRIPTS, F1_T3_DESC)
+    println("")
+    _emit_falsifier(F2_ID, F2_RETRACT, F2_T1_SCRIPTS, F2_T2_SCRIPTS, F2_T3_SCRIPTS, F2_T3_DESC)
+    println("")
+    _emit_falsifier(F3_ID, F3_RETRACT, F3_T1_SCRIPTS, F3_T2_SCRIPTS, F3_T3_SCRIPTS, F3_T3_DESC)
+    println("")
+    _emit_falsifier(F4_ID, F4_RETRACT, F4_T1_SCRIPTS, F4_T2_SCRIPTS, F4_T3_SCRIPTS, F4_T3_DESC)
+
+    println("")
+    println("  Roadmap registration audit:")
+    _check(check_roadmap_declares(F1_ID), F1_ID + " registered in roadmap §A.4", "")
+    _check(check_roadmap_declares(F2_ID), F2_ID + " registered in roadmap §A.4", "")
+    _check(check_roadmap_declares(F3_ID), F3_ID + " registered in roadmap §A.4", "")
+    _check(check_roadmap_declares(F4_ID), F4_ID + " registered in roadmap §A.4", "")
+
+    println("")
+    println("  Tier-script presence audit (T1 + T2 must exist for 67% closure):")
+    check_tier_scripts_present(F1_ID, "T1", F1_T1_SCRIPTS)
+    check_tier_scripts_present(F1_ID, "T2", F1_T2_SCRIPTS)
+    check_tier_scripts_present(F2_ID, "T1", F2_T1_SCRIPTS)
+    check_tier_scripts_present(F2_ID, "T2", F2_T2_SCRIPTS)
+    check_tier_scripts_present(F3_ID, "T1", F3_T1_SCRIPTS)
+    check_tier_scripts_present(F3_ID, "T2", F3_T2_SCRIPTS)
+    check_tier_scripts_present(F4_ID, "T1", F4_T1_SCRIPTS)
+    check_tier_scripts_present(F4_ID, "T2", F4_T2_SCRIPTS)
+
+    println("")
+    println("  Note: claimed closure pct here is BOOK-KEEPING ONLY — it asserts")
+    println("  evidence has been WRITTEN, not that the underlying claims are")
+    println("  TRUE. T3 (empirical) is the only tier that can falsify; T1/T2")
+    println("  closure means the closed-form is REGRESSION-LOCKED and ready")
+    println("  for empirical comparison.")
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_FALSIFIER__ FAIL")
+        exit(1)
+    }
+    println("__HEXA_FUSION_FALSIFIER__ PASS — 4/4 preregistered, 67% closure (T1+T2 locked)")
+    exit(0)
+}
