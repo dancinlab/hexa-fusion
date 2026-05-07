@@ -5,6 +5,16 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 2nd RSC iteration: cross-pillar anchor consistency)
+- `verify/cross_doc_audit.hexa` — cross-pillar anchor consistency (T1, 24/24 PASS). Asserts that the canonical n=6 anchors (Q=σ-φ=10, T_i=σ+φ=14, B=σ·τ=48, η=σ/J₂=50%, J₂=24, aneutronic/neutronic verdict bit, archetype 122/122, ledger 26/27 + 1 honest negative) and the 4 falsifier preregister tags (F-FUSION-1/2/3/4) are referenced consistently across .roadmap + 4 pillar docs + hexa.toml + README. Sentinel `__HEXA_FUSION_CROSSDOC__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [lattice, cross-doc]`; help + per-subcmd help bumped.
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  2/2`.
+
+### Verification (iter 2)
+- `hexa run verify/cross_doc_audit.hexa` → 24/24 PASS.
+- `hexa-fusion verify all` → `PASS: 2/2`, exit 0.
+- `hexa run tests/test_all.hexa` → 4/4 PASS.
+
 ### Added (2026-05-07 — 1st RSC iteration: lattice closure + verify dispatcher + test scaffolding)
 - `verify/lattice_check.hexa` — n=6 invariant lattice audit (T1). 35/35 checks: master closure (σ·φ = n·τ = J₂ = 24) + 8 fusion-projected derivations (Q=σ-φ=10, T_i=σ+φ=14, B=σ·τ=48, Brayton η=σ/J₂=50%, TBR=(n+1)/n=7/6, TF=3n=18, D-T α/n split, verdict bit) + roadmap declaration check + 4-pillar lattice-token cross-reference + archetype 122/122 + tabletop Q=τ=4 + powerplant B=σ·τ=48T + hexa.toml verdict honesty. Sentinel `__HEXA_FUSION_LATTICE__ PASS`.
 - `cli/hexa-fusion.hexa` — extended `verify` subcommand with 2-tier dispatch: bare `verify` keeps the 28-item comprehensive sweep (v1.0.0 contract preserved); `verify all` runs every `verify/*.hexa` and aggregates exit codes; `verify <sub>` runs a single script. `VERIFY_SUBS = [lattice]` is the authoritative inventory (bumps per recipe iteration).

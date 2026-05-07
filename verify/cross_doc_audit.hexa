@@ -1,0 +1,226 @@
+#!hexa strict
+// hexa-fusion/verify/cross_doc_audit.hexa — cross-pillar anchor consistency.
+//
+// Asserts that the canonical n=6 anchors (Q=σ-φ=10, T_i=σ+φ=14 keV,
+// B=σ·τ=48 T, η=σ/J₂=50%, archetype 122/122, ledger 26/27 + 1 honest
+// negative, lawson_triple gap, 4 falsifiers) are referenced consistently
+// across the 4 pillar docs + roadmap + hexa.toml + README.
+//
+// Run:
+//   hexa run verify/cross_doc_audit.hexa
+//
+// Cost: $0 (pure file reads + string scan).
+//
+// @no-lock-needed
+// @resolver-bypass(reason="Pure local cross-doc auditor.")
+
+let HOME = env("HOME")
+
+fn _root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"  // @allow-devpath
+}
+
+let ROOT = _root()
+
+// ── doc paths ────────────────────────────────────────────────────────────
+let DOC_ROADMAP    = ROOT + "/.roadmap.hexa_fusion"
+let DOC_FUSION     = ROOT + "/fusion/doc/fusion.md"
+let DOC_TABLETOP   = ROOT + "/tabletop_fusion/doc/tabletop-fusion.md"
+let DOC_POWERPLANT = ROOT + "/fusion_powerplant/doc/fusion-powerplant.md"
+let DOC_PLASMA     = ROOT + "/plasma_deep/doc/plasma-fusion-deep.md"
+let DOC_HEXA_TOML  = ROOT + "/hexa.toml"
+let DOC_README     = ROOT + "/README.md"
+let DOC_CHANGELOG  = ROOT + "/CHANGELOG.md"
+
+// ── helpers ──────────────────────────────────────────────────────────────
+
+fn _read(p: str) -> str {
+    if file_exists(p) == false { return "" }
+    return read_file(p)
+}
+
+fn _contains(text: str, needle: str) -> bool {
+    if text.len() == 0 { return false }
+    if needle.len() == 0 { return true }
+    return text.find(needle) >= 0
+}
+
+fn _any_of(text: str, needles: [str]) -> bool {
+    for n in needles { if _contains(text, n) { return true } }
+    return false
+}
+
+let mut RUN = 0
+let mut FAIL = 0
+let mut FAILURES: [str] = []
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label)
+        if detail.len() > 0 { println("         · " + detail) }
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label)
+        if detail.len() > 0 { println("         · " + detail) }
+    }
+}
+
+// Count how many docs in `paths` contain any of `needles`.
+fn _hits(needles: [str], paths: [str]) -> int {
+    let mut h = 0
+    for p in paths {
+        let t = _read(p)
+        if _any_of(t, needles) { h = h + 1 }
+    }
+    return h
+}
+
+// ── anchors ──────────────────────────────────────────────────────────────
+
+let ALL_DOCS = [DOC_ROADMAP, DOC_FUSION, DOC_TABLETOP, DOC_POWERPLANT, DOC_PLASMA, DOC_HEXA_TOML, DOC_README]
+let PILLAR_DOCS = [DOC_FUSION, DOC_TABLETOP, DOC_POWERPLANT, DOC_PLASMA]
+
+fn check_anchor(label: str, needles: [str], min_hits: int, kind: str) {
+    let docs = if kind == "all" { ALL_DOCS } else { PILLAR_DOCS }
+    let h = _hits(needles, docs)
+    let ok = h >= min_hits
+    _check(ok, label,
+           "hits = " + str(h) + " of " + str(len(docs)) +
+           " (" + kind + " scope, need ≥ " + str(min_hits) + ")")
+}
+
+// ── docs structural ──────────────────────────────────────────────────────
+
+fn check_doc_present(label: str, path: str) {
+    _check(file_exists(path), "doc present: " + label, path)
+}
+
+// ── falsifier preregister cross-check ────────────────────────────────────
+
+fn check_falsifier_referenced(label: str, ftag: str) {
+    let txt = _read(DOC_ROADMAP)
+    _check(_contains(txt, ftag),
+           "roadmap §A.4 declares " + label,
+           ftag + " preregister")
+}
+
+// ── version + ledger consistency ─────────────────────────────────────────
+
+fn check_version_pin() {
+    let toml = _read(DOC_HEXA_TOML)
+    let rd   = _read(DOC_ROADMAP)
+    let rdme = _read(DOC_README)
+    let okt = _contains(toml, "version = \"1.0.0\"")
+    let okr = _contains(rd, "v1.0.0")
+    let okm = _contains(rdme, "v1.0.0") || _contains(rdme, "1.0.0")
+    _check(okt && okr && okm,
+           "v1.0.0 pin consistent: hexa.toml + roadmap + README",
+           "toml=" + str(okt) + " roadmap=" + str(okr) + " readme=" + str(okm))
+}
+
+fn check_ledger_consistency() {
+    let toml = _read(DOC_HEXA_TOML)
+    let rdme = _read(DOC_README)
+    let okt = _contains(toml, "ledger_total = 27") && _contains(toml, "ledger_exact = 26")
+    let okm = _contains(rdme, "26/27")
+    _check(okt && okm,
+           "ledger 26/27 EXACT consistent: hexa.toml + README",
+           "toml=" + str(okt) + " readme=" + str(okm))
+}
+
+fn check_honest_negative_preserved() {
+    let txts = [_read(DOC_HEXA_TOML), _read(DOC_README), _read(DOC_FUSION),
+                _read(ROOT + "/fusion/doc/fusion_ledger.README.md")]
+    let mut hits = 0
+    for t in txts {
+        if _any_of(t, ["lawson_triple", "honest negative", "honest_negative", "1-decade"]) { hits = hits + 1 }
+    }
+    _check(hits >= 3,
+           "honest negative (lawson_triple 1-decade) preserved across ≥ 3 docs",
+           "hits = " + str(hits) + " of 4")
+}
+
+// ── main ─────────────────────────────────────────────────────────────────
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — cross-pillar anchor consistency audit")
+    println("========================================================================")
+    println("  root: " + ROOT)
+    println("")
+
+    println("-- doc presence --")
+    check_doc_present("roadmap",          DOC_ROADMAP)
+    check_doc_present("fusion pillar",    DOC_FUSION)
+    check_doc_present("tabletop pillar",  DOC_TABLETOP)
+    check_doc_present("powerplant pillar", DOC_POWERPLANT)
+    check_doc_present("plasma_deep pillar", DOC_PLASMA)
+    check_doc_present("hexa.toml",        DOC_HEXA_TOML)
+    check_doc_present("README",           DOC_README)
+    check_doc_present("CHANGELOG",        DOC_CHANGELOG)
+    println("")
+
+    println("-- n=6 anchor cross-references (4 pillar docs) --")
+    check_anchor("Q-gain σ-φ = 10",
+                 ["σ-φ", "sigma-phi", "Q = sigma", "Q=10", "Q = 10"],
+                 3, "pillars")
+    check_anchor("T_i σ+φ = 14 keV",
+                 ["σ+φ", "sigma+phi", "14 keV", "= 14"],
+                 2, "pillars")
+    check_anchor("B σ·τ = 48 T",
+                 ["σ·τ=48", "sigma·tau=48", "48 T", "48T", "σ·τ = 48"],
+                 2, "pillars")
+    check_anchor("Brayton η = σ/J₂ = 50%",
+                 ["σ/J₂", "sigma/J2", "sigma/n", "η=50%", "Brayton"],
+                 2, "pillars")
+    check_anchor("J₂ = 24 master",
+                 ["J_2", "J₂", "J2(6)", "= 24"],
+                 3, "pillars")
+    check_anchor("aneutronic / neutronic verdict bit (φ=2)",
+                 ["aneutronic", "neutronic", "p-11B", "p-¹¹B", "D-T"],
+                 3, "pillars")
+    println("")
+
+    println("-- archetype + ledger anchors --")
+    check_anchor("archetype 122/122 EXACT",
+                 ["122/122"],
+                 1, "all")
+    check_anchor("12 fusion archetype lock",
+                 ["12 fusion-archetype", "12-fusion-archetype", "12 archetype"],
+                 1, "all")
+    check_anchor("ledger 27 / 26 / 1 honest negative",
+                 ["27-item", "26/27", "26 EXACT", "honest negative", "honest_negative"],
+                 3, "all")
+    println("")
+
+    println("-- version + ledger pin --")
+    check_version_pin()
+    check_ledger_consistency()
+    check_honest_negative_preserved()
+    println("")
+
+    println("-- falsifier preregister (.roadmap §A.4) --")
+    check_falsifier_referenced("F-FUSION-1 (lawson_triple gap)",         "F-FUSION-1")
+    check_falsifier_referenced("F-FUSION-2 (p-11B Q=τ=4 break-even)",    "F-FUSION-2")
+    check_falsifier_referenced("F-FUSION-3 (KSTAR-N6 48T → Q=σ-φ=10)",   "F-FUSION-3")
+    check_falsifier_referenced("F-FUSION-4 (archetype 122 → 132 = 11·σ)", "F-FUSION-4")
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_CROSSDOC__ FAIL")
+        exit(1)
+    }
+    println("  All n=6 anchors consistent across 4 pillars + roadmap + hexa.toml + README.")
+    println("__HEXA_FUSION_CROSSDOC__ PASS")
+    exit(0)
+}

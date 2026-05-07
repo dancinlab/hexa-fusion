@@ -20,7 +20,8 @@ let HEXA = HOME + "/.hx/bin/hexa"
 
 // Expected aggregate count — bump per iter (recipe §2 step 4).
 // iter 1 (2026-05-07): lattice = 1
-let EXPECTED_AGG = "PASS:  1/1"
+// iter 2 (2026-05-07): + cross-doc = 2
+let EXPECTED_AGG = "PASS:  2/2"
 
 fn shq(s: str) -> str {
     return "'" + s.replace("'", "'\\''") + "'"
