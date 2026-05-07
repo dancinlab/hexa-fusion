@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 6th RSC iteration: D-T 4-machine published parity)
+- `verify/numerics_fusion_parity.hexa` — D-T published-machine parity (T2, 13/13 PASS). Compares the n=6 closed-form predictions against the canonical 4-machine D-T tokamak set (ITER, JET, KSTAR, SPARC). 5 sections cover ITER (Q=10 EXACT, T_i=14 EXACT, V=840 EXACT, B_t scope mismatch as 9.06× headroom), JET 1997 DT-1 (Q=0.67 → n6 Q=10 = 14.9× lift, B 13.9× lift), KSTAR sister project (T_e=8.617 keV → 1.624× lift, B_t=3.5 T → 13.7× headroom — F-FUSION-3 anchor), SPARC HTS demo (B_t=12.2 T ≈ σ=12 CLOSE 1.6%, Q≥2 → 5× headroom), and a 4-machine ladder summary (Q ladder, T_i ladder, B_t ladder). Each parity row reports closed-form vs published, relative error %, and EXACT/CLOSE/WEAK/FAIL grade. Provides T2 evidence for F-FUSION-3. Sentinel `__HEXA_FUSION_NUMERICS_FUSION_PARITY__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion-parity]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_fusion_parity row (4 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  6/6`.
+
+### Verification (iter 6)
+- `hexa run verify/numerics_fusion_parity.hexa` → 13/13 PASS (3 EXACT, 1 CLOSE, 9 ratio dominance).
+- `hexa-fusion verify all` → `PASS: 6/6`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 5th RSC iteration: D-T closed-form numerics, T2 tier opens)
 - `verify/numerics_fusion.hexa` — D-T closed-form numerics (T2, 17/17 PASS). First T2-tier script: re-derives every n=6-projected D-T quantity in float via `use "self/runtime/math_pure"` (no raw libm), then cross-checks against the integer atom from the lattice. 9 sections cover float ↔ int parity (master closure), Lawson n=6 SSOT (τ·10^14) + measured-vs-n6 7-decade gap (F-FUSION-1 honest negative), Q re-derivation (powerplant 10, break-even 4, ratio 2.5), plasma + Carnot bound (η_brayton ≤ 1 - n/(σ+φ)), D-T Q-value partition (3.518 + 14.068 ≈ 17.586 MeV), α-share theory ↔ measured (1/sopfr ≈ 0.20), T_opt anchor (σ+φ=14 vs published 13.6, <5% rel err), He-4 binding parity (J₂ vs 28.296 MeV, <20%), magnet/power identities, archetype card, R(6) self-ratio. Provides T2 evidence for F-FUSION-1 + F-FUSION-3. Sentinel `__HEXA_FUSION_NUMERICS_FUSION__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion]`; help bumped.

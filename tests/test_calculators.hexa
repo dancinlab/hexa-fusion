@@ -23,6 +23,7 @@ let CASES = [
     "calc_fusion.hexa|__HEXA_FUSION_CALC_FUSION__ PASS",
     "calc_tabletop.hexa|__HEXA_FUSION_CALC_TABLETOP__ PASS",
     "numerics_fusion.hexa|__HEXA_FUSION_NUMERICS_FUSION__ PASS",
+    "numerics_fusion_parity.hexa|__HEXA_FUSION_NUMERICS_FUSION_PARITY__ PASS",
 ]
 
 fn shq(s: str) -> str {
