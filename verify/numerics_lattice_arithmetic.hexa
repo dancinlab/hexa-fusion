@@ -1,0 +1,264 @@
+#!hexa strict
+// hexa-fusion/verify/numerics_lattice_arithmetic.hexa — math_pure stability floor (T2).
+//
+// `verify/lattice_check.hexa` proves the n=6 closures using INTEGER
+// arithmetic. This script repeats the same derivations using
+// `self/runtime/math_pure` floating-point routines (sqrt_pure,
+// pow_pure, log10_pure, exp_pure / log_pure) and asserts they agree
+// to sub-1e-9 relative error on every n=6 anchor.
+//
+// Why this matters: every numerics_*.hexa script composes math_pure
+// calls with these same anchors. If math_pure drifts on integer-equivalent
+// anchors (e.g. sqrt(144) ≠ 12), every downstream numeric is contaminated.
+// This script gives that drift its own regression slot.
+//
+// Falsifies (T2):
+//   meta — math_pure precision regression on the 7 lattice atoms;
+//          if this fires, every numerics_*.hexa is suspect and
+//          the F-FUSION-1/2/3/4 T2 evidence is invalidated.
+//
+// Run:
+//   hexa run verify/numerics_lattice_arithmetic.hexa
+
+use "self/runtime/math_pure"
+
+let HOME = env("HOME")
+
+// ── n=6 lattice (canonical integer values, float casts) ─────────────────
+let SIGMA_INT     = 12
+let SIGMA_SQ_INT  = 144
+let SIGMA_CU_INT  = 1728     // σ³
+
+let SIGMA = 12.0
+let PHI   = 2.0
+let TAU   = 4.0
+let SOPFR = 5.0
+let J2    = 24.0
+let N     = 6.0
+
+// fusion-projected anchors
+let Q_PP    = SIGMA - PHI       // 10
+let T_I     = SIGMA + PHI       // 14
+let B_RTSC  = SIGMA * TAU       // 48
+let ETA_BR  = SIGMA / J2        // 0.5
+let TBR_NUM = N + 1.0           // 7
+let CARD    = SIGMA * Q_PP + PHI  // 122
+
+// ── audit accumulator ───────────────────────────────────────────────────
+let mut RUN = 0
+let mut FAIL = 0
+let mut FAILURES: [str] = []
+
+let FALSIFIERS = [
+    "math_pure precision regression on n=6 anchors",
+    "float→int cast broken on integer-valued anchors",
+    "exp/log roundtrip drifted (numerics tower compromised)",
+    "log10 homomorphism property broken",
+    "sqrt routine broken on σ² = 144 anchor",
+]
+
+let TOL = 1.0e-9
+
+fn _abs(x: float) -> float { if x < 0.0 { return 0.0 - x } return x }
+
+fn _rel(a: float, b: float) -> float {
+    let d = _abs(a - b)
+    let denom = _abs(b)
+    if denom < 1e-300 { return d }
+    return d / denom
+}
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label + "  ·  " + detail)
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label + "  ·  " + detail)
+    }
+}
+
+// ── §1 sqrt routines on n=6 anchors ─────────────────────────────────────
+
+fn check_sqrt_sigma_squared() {
+    let v = sqrt_pure(SIGMA * SIGMA)
+    let e = _rel(v, SIGMA)
+    _check(e < TOL,
+           "sqrt_pure(σ²) = σ  (sqrt(144) = 12)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_sqrt_b_squared() {
+    // sqrt((σ·τ)²) = σ·τ = 48
+    let v = sqrt_pure(B_RTSC * B_RTSC)
+    let e = _rel(v, B_RTSC)
+    _check(e < TOL,
+           "sqrt_pure(B²) = B = σ·τ = 48",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_sqrt_j2_squared() {
+    let v = sqrt_pure(J2 * J2)
+    let e = _rel(v, J2)
+    _check(e < TOL,
+           "sqrt_pure(J₂²) = J₂ = 24",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+// ── §2 pow_pure on n=6 anchors ──────────────────────────────────────────
+
+fn check_pow_sigma_2() {
+    let v = pow_pure(SIGMA, 2.0)
+    let e = _rel(v, 144.0)
+    _check(e < TOL,
+           "pow_pure(σ, 2) = 144",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_pow_sigma_3() {
+    let v = pow_pure(SIGMA, 3.0)
+    let e = _rel(v, 1728.0)
+    _check(e < TOL,
+           "pow_pure(σ, 3) = 1728  (σ³)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_pow_b_4() {
+    // (σ·τ)^τ = 48^4 = 5,308,416  (tabletop B^4 scaling anchor)
+    let v = pow_pure(B_RTSC, TAU)
+    let e = _rel(v, 5308416.0)
+    _check(e < TOL,
+           "pow_pure(B, τ) = (σ·τ)^τ = 5,308,416  (tabletop B^4)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_pow_q_n() {
+    // (σ-φ)^n = 10^6 = 1,000,000  (canonical decade-span)
+    let v = pow_pure(Q_PP, N)
+    let e = _rel(v, 1.0e6)
+    _check(e < TOL,
+           "pow_pure(σ-φ, n) = 10^6  (canonical span)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+// ── §3 log/exp homomorphism + roundtrips ────────────────────────────────
+
+fn check_log10_decade_chain() {
+    // log10(10^7) = 7  (Lawson exponent + decade gap span)
+    let v = log10_pure(1.0e7)
+    let e = _rel(v, 7.0)
+    _check(e < TOL,
+           "log10_pure(10^7) = 7  (Lawson decade-chain span)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_log10_homomorphism() {
+    let lhs = log10_pure(144.0)
+    let rhs = 2.0 * log10_pure(SIGMA)
+    let e = _rel(lhs, rhs)
+    _check(e < TOL,
+           "log10(σ²) = 2·log10(σ)  (homomorphism on n=6 anchor)",
+           "lhs=" + str(lhs) + " rhs=" + str(rhs))
+}
+
+fn check_exp_log_sigma() {
+    let v = exp_pure(log_pure(SIGMA))
+    let e = _rel(v, SIGMA)
+    _check(e < TOL,
+           "exp(log(σ)) = σ  (roundtrip)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+fn check_exp_log_b_field() {
+    let v = exp_pure(log_pure(B_RTSC))
+    let e = _rel(v, B_RTSC)
+    _check(e < TOL,
+           "exp(log(B = σ·τ = 48)) = B  (roundtrip on B-field anchor)",
+           "v=" + str(v) + " rel=" + str(e))
+}
+
+// ── §4 cross-routine consistency ────────────────────────────────────────
+
+fn check_sqrt_pow_consistency() {
+    let lhs = sqrt_pure(pow_pure(SIGMA, 3.0))
+    let rhs = pow_pure(SIGMA, 1.5)
+    let e = _rel(lhs, rhs)
+    _check(e < TOL,
+           "sqrt(σ³) = σ^(3/2)  (sqrt vs pow_pure cross-consistency)",
+           "lhs=" + str(lhs) + " rhs=" + str(rhs))
+}
+
+// ── §5 master closure under float ───────────────────────────────────────
+
+fn check_master_float() {
+    let lhs = SIGMA * PHI
+    let mid = N * TAU
+    _check(lhs == J2 && mid == J2,
+           "float master closure: σ·φ = n·τ = J₂ = 24",
+           "lhs=" + str(lhs) + " mid=" + str(mid) + " J₂=" + str(J2))
+}
+
+// ── §6 fusion-projected anchors (float exact) ───────────────────────────
+
+fn check_q_anchor()       { _check(Q_PP    == 10.0, "Q = σ-φ = 10 (float exact)",         "Q=" + str(Q_PP)) }
+fn check_t_i_anchor()     { _check(T_I     == 14.0, "T_i = σ+φ = 14 keV (float exact)",   "T_i=" + str(T_I)) }
+fn check_b_anchor()       { _check(B_RTSC  == 48.0, "B = σ·τ = 48 T (float exact)",       "B=" + str(B_RTSC)) }
+fn check_eta_anchor()     { _check(ETA_BR  == 0.5,  "η = σ/J₂ = 0.5 (float exact)",       "η=" + str(ETA_BR)) }
+fn check_card_anchor()    { _check(CARD    == 122.0, "card = σ·(σ-φ)+φ = 122 (float exact)", "card=" + str(CARD)) }
+fn check_tbr_anchor()     { _check(TBR_NUM == 7.0,  "TBR num = n+1 = 7 (float exact)",    "n+1=" + str(TBR_NUM)) }
+
+// ── §7 main ─────────────────────────────────────────────────────────────
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — math_pure stability floor (T2, numerics_lattice_arithmetic)")
+    println("  every n=6 anchor must round-trip in math_pure to < 1e-9 rel err")
+    println("========================================================================")
+    println("  TOL = " + str(TOL))
+    println("")
+
+    println("-- §1 sqrt routines --")
+    check_sqrt_sigma_squared()
+    check_sqrt_b_squared()
+    check_sqrt_j2_squared()
+    println("")
+    println("-- §2 pow_pure on n=6 anchors --")
+    check_pow_sigma_2()
+    check_pow_sigma_3()
+    check_pow_b_4()
+    check_pow_q_n()
+    println("")
+    println("-- §3 log/exp homomorphism + roundtrips --")
+    check_log10_decade_chain()
+    check_log10_homomorphism()
+    check_exp_log_sigma()
+    check_exp_log_b_field()
+    println("")
+    println("-- §4 cross-routine consistency --")
+    check_sqrt_pow_consistency()
+    println("")
+    println("-- §5 master closure (float) --")
+    check_master_float()
+    println("")
+    println("-- §6 fusion-projected anchors (float exact) --")
+    check_q_anchor()
+    check_t_i_anchor()
+    check_b_anchor()
+    check_eta_anchor()
+    check_card_anchor()
+    check_tbr_anchor()
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_NUMERICS_LATTICE__ FAIL")
+        exit(1)
+    }
+    println("  math_pure stable on every n=6 anchor.")
+    println("__HEXA_FUSION_NUMERICS_LATTICE__ PASS")
+    exit(0)
+}

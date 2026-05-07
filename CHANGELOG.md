@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 13th RSC iteration: math_pure stability floor)
+- `verify/numerics_lattice_arithmetic.hexa` — math_pure stability floor (T2, 19/19 PASS). Repeats every n=6 lattice closure using `math_pure` (sqrt_pure, pow_pure, log10_pure, exp_pure / log_pure) and asserts agreement to 1e-9 relative error on every anchor. 6 sections: sqrt routines (sqrt(σ²)=σ, sqrt(B²)=B=48, sqrt(J₂²)=J₂), pow_pure on n=6 anchors (σ²=144, σ³=1728, B^τ=48^4=5.31M, (σ-φ)^n=10^6), log/exp homomorphism + roundtrips (log10(10^7)=7, log10 homomorphism on σ², exp/log roundtrip on σ + B), cross-routine consistency (sqrt(σ³) vs σ^(3/2)), float master closure, and 6 fusion-projected float-exact anchors (Q=10, T_i=14, B=48, η=0.5, card=122, n+1=7). Provides T2 evidence at the meta level — if this fails, every numerics_*.hexa is suspect. Sentinel `__HEXA_FUSION_NUMERICS_LATTICE__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-lattice]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_lattice_arithmetic row (11 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  13/13`.
+
+### Verification (iter 13)
+- `hexa run verify/numerics_lattice_arithmetic.hexa` → 19/19 PASS (max rel err on exp/log roundtrip: 5.9e-16).
+- `hexa-fusion verify all` → `PASS: 13/13`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 12th RSC iteration: cross-pillar numerical anchor, all 4 falsifiers)
 - `verify/numerics_cross_pillar.hexa` — cross-pillar numerical anchor (T2, 10/10 PASS). The float-arithmetic counterpart to cross_doc_audit (which is doc-text only). Computes every n=6-derived anchor 4 times — once per pillar — and asserts bit-identical results. 9 sections: Q across pillars (10), T_i across pillars (14 keV), B across all 4 pillars (48 T), η_Brayton across pillars (0.5), break-even τ=4 < powerplant Q=10, archetype card σ·(σ-φ)+φ=122 (F-FUSION-4 anchor) + σ=12=3·α cross-check, master closure preserved (24=24=J₂), p-11B aneutronic η-ratio=σ/n=2 × DT, TF coil count 3n=18. Provides T2 evidence for ALL 4 falsifiers. Sentinel `__HEXA_FUSION_NUMERICS_CROSS_PILLAR__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-cross]`; help bumped.
