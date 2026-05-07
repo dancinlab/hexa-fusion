@@ -48,6 +48,17 @@ let MOD_CALC   = HF + "/cli/fusion_calc.hexa"
 let MOD_DSE    = HF + "/cli/fusion_dse.hexa"
 let MOD_VERIFY_CLI = HF + "/cli/fusion_verify.hexa"
 
+// derivative modules — sscb-pattern composition (margin / whatif /
+// sensitivity / archetype / doctor / status / pillar). Optional at v1.0.0;
+// present from v1.0.x onward.
+let MOD_MARGIN      = HF + "/cli/fusion_margin.hexa"
+let MOD_WHATIF      = HF + "/cli/fusion_whatif.hexa"
+let MOD_SENSITIVITY = HF + "/cli/fusion_sensitivity.hexa"
+let MOD_ARCHETYPE   = HF + "/cli/fusion_archetype.hexa"
+let MOD_DOCTOR      = HF + "/cli/fusion_doctor.hexa"
+let MOD_STATUS_MOD  = HF + "/cli/fusion_status.hexa"
+let MOD_PILLAR      = HF + "/cli/fusion_pillar.hexa"
+
 let LOG_PATH = HF + "/state/hexa_fusion_cli.log"
 
 // ─── arg helpers ───
@@ -216,26 +227,95 @@ fn cmd_verify(a: [str]) {
     _audit("verify", "", 0)
 }
 
+// ─── subcommand: derivative-module dispatch (sscb-pattern) ───
+
+fn _passthrough(mod_path: str, mod_name: str, a: [str]) {
+    let mut extras: [str] = []
+    let mut i = 3
+    while i < a.len() {
+        extras = extras + [a[i]]
+        i = i + 1
+    }
+    let raw = _run_module(mod_path, extras)
+    println(raw.trim())
+    if json_mode(a) {
+        let pass = if raw.contains("PASS") { "true" } else { "false" }
+        println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"" + mod_name + "\",\"pass\":" + pass + "}")
+    }
+    _audit(mod_name, "", 0)
+}
+
+fn cmd_margin(a: [str])      { _passthrough(MOD_MARGIN,      "margin",      a) }
+fn cmd_whatif(a: [str])      { _passthrough(MOD_WHATIF,      "whatif",      a) }
+fn cmd_sensitivity(a: [str]) { _passthrough(MOD_SENSITIVITY, "sensitivity", a) }
+fn cmd_archetype(a: [str])   { _passthrough(MOD_ARCHETYPE,   "archetype",   a) }
+fn cmd_doctor(a: [str])      { _passthrough(MOD_DOCTOR,      "doctor",      a) }
+fn cmd_pillar(a: [str])      { _passthrough(MOD_PILLAR,      "pillar",      a) }
+
+// fusion_status module (full snapshot) — replaces inline status when
+// the module is present; falls back to the inline cmd_status() above
+// to preserve v1.0.0 behaviour when only the dispatcher is checked out.
+fn cmd_status_full(a: [str]) {
+    if _file_exists(MOD_STATUS_MOD) {
+        _passthrough(MOD_STATUS_MOD, "status", a)
+    } else {
+        cmd_status(a)
+    }
+}
+
 // ─── subcommand: selftest ───
 
 fn cmd_selftest(a: [str]) {
-    println("hexa-fusion selftest — 4-sub-command sentinel sweep")
+    println("hexa-fusion selftest — sub-command sentinel sweep")
     let mut all_ok = true
-    let modules = [["ledger", MOD_LEDGER], ["calc", MOD_CALC], ["dse", MOD_DSE], ["verify", MOD_VERIFY_CLI]]
-    for m in modules {
+    let core_modules = [
+        ["ledger",      MOD_LEDGER],
+        ["calc",        MOD_CALC],
+        ["dse",         MOD_DSE],
+        ["verify",      MOD_VERIFY_CLI]
+    ]
+    let derivative_modules = [
+        ["margin",      MOD_MARGIN],
+        ["whatif",      MOD_WHATIF],
+        ["sensitivity", MOD_SENSITIVITY],
+        ["archetype",   MOD_ARCHETYPE],
+        ["doctor",      MOD_DOCTOR],
+        ["status",      MOD_STATUS_MOD],
+        ["pillar",      MOD_PILLAR]
+    ]
+    println("  core (v1.0.0 contract):")
+    let mut core_ok = 0
+    for m in core_modules {
         let name = m[0]
         let path = m[1]
         if _file_exists(path) {
-            println("  [OK]   " + name + "  → " + path)
+            println("    [OK]   " + name + "  → " + path)
+            core_ok = core_ok + 1
         } else {
-            println("  [MISS] " + name + "  → " + path)
+            println("    [MISS] " + name + "  → " + path)
             all_ok = false
         }
     }
+    println("  derivative (sscb-pattern, optional at v1.0.0):")
+    let mut deriv_ok = 0
+    let mut deriv_total = 0
+    for m in derivative_modules {
+        let name = m[0]
+        let path = m[1]
+        deriv_total = deriv_total + 1
+        if _file_exists(path) {
+            println("    [OK]   " + name + "  → " + path)
+            deriv_ok = deriv_ok + 1
+        } else {
+            println("    [WARN] " + name + "  → " + path + "  (optional)")
+        }
+    }
+    println("")
     if all_ok {
-        println("__HEXA_FUSION_SELFTEST__ PASS  (4/4 sub-command modules present)")
+        println("__HEXA_FUSION_SELFTEST__ PASS  (" + str(core_ok) + "/4 core + " +
+                str(deriv_ok) + "/" + str(deriv_total) + " derivative)")
     } else {
-        println("__HEXA_FUSION_SELFTEST__ FAIL  (one or more modules missing)")
+        println("__HEXA_FUSION_SELFTEST__ FAIL  (one or more core modules missing)")
     }
     if json_mode(a) {
         println("{\"hexa_fusion\":\"" + VERSION + "\",\"subcmd\":\"selftest\",\"verdict\":\"" + (if all_ok { "PASS" } else { "FAIL" }) + "\"}")
@@ -267,9 +347,17 @@ fn cmd_help() {
     println("  dse             design-space exploration (KSTAR-N6 powerplant scope)")
     println("  verify          28-item comprehensive verifier sweep")
     println("")
+    println("derivative analysis (sscb-pattern):")
+    println("  margin          per-row residual / headroom report (tightest first)")
+    println("  whatif          override n=6 lattice, re-run ledger, diff matches")
+    println("  sensitivity     ±perturbation sweep over n=6 anchors (dominance map)")
+    println("  archetype       Mk.I→Mk.V projector + 122/122 EXACT closure tally")
+    println("  pillar          per-pillar deep-dive (4-pillar tetrahedron)")
+    println("")
     println("utility subcommands:")
-    println("  status          pillar table + verdict + caveats")
-    println("  selftest        4-sub-command sentinel sweep")
+    println("  status          single-screen project status (pillars/ledger/falsifiers/cadence)")
+    println("  doctor          env health probe (runtime, modules, hx shim)")
+    println("  selftest        sub-command sentinel sweep (core + derivative)")
     println("")
     println("global flags:")
     println("  --version       show version")
@@ -308,7 +396,32 @@ fn cmd_subhelp(sub: str) {
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")
-        println("  4-sub-command sentinel sweep — verifies all 4 sub-command modules present")
+        println("  sub-command sentinel sweep — verifies core + derivative modules")
+        println("  cost: $0")
+    } else if sub == "margin" {
+        println("hexa-fusion margin [--json] [--top N]")
+        println("  per-row residual / headroom report; sorted tightest first")
+        println("  cost: $0 (closed-form arithmetic)")
+    } else if sub == "whatif" {
+        println("hexa-fusion whatif [--set k=v]... [--counter-factual] [--json]")
+        println("  override n=6 lattice (sigma/tau/phi/sopfr/j2/mu/n/lawson_calibration)")
+        println("  and re-run the 27-row ledger; diff vs canonical baseline")
+        println("  cost: $0")
+    } else if sub == "sensitivity" {
+        println("hexa-fusion sensitivity [--steps \"0.01,0.05,0.10,0.20\"] [--json]")
+        println("  ±-perturbation sweep over each n=6 anchor; surfaces dominant levers")
+        println("  cost: $0 (~50 ms)")
+    } else if sub == "archetype" {
+        println("hexa-fusion archetype [--mk <id>] [--json]")
+        println("  Mk.I→Mk.V projector + 122/122 EXACT closure tally")
+        println("  cost: $0")
+    } else if sub == "doctor" {
+        println("hexa-fusion doctor [--strict] [--json]")
+        println("  env + module health probe (runtime / modules / hx shim)")
+        println("  cost: $0")
+    } else if sub == "pillar" {
+        println("hexa-fusion pillar [--pillar <id>] [--json]")
+        println("  per-pillar deep-dive — fusion / tabletop_fusion / fusion_powerplant / plasma_deep")
         println("  cost: $0")
     } else {
         cmd_help()
@@ -360,7 +473,7 @@ fn main() {
     if sub == "help" { cmd_help(); return }
 
     if sub == "status" {
-        cmd_status(a)
+        cmd_status_full(a)
     } else if sub == "ledger" {
         cmd_ledger(a)
     } else if sub == "calc" {
@@ -371,6 +484,18 @@ fn main() {
         cmd_verify(a)
     } else if sub == "selftest" {
         cmd_selftest(a)
+    } else if sub == "margin" {
+        cmd_margin(a)
+    } else if sub == "whatif" {
+        cmd_whatif(a)
+    } else if sub == "sensitivity" {
+        cmd_sensitivity(a)
+    } else if sub == "archetype" {
+        cmd_archetype(a)
+    } else if sub == "doctor" {
+        cmd_doctor(a)
+    } else if sub == "pillar" {
+        cmd_pillar(a)
     } else {
         eprintln("hexa-fusion: unknown subcommand '" + sub + "'")
         eprintln("run 'hexa-fusion help' for usage")

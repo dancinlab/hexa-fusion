@@ -24,14 +24,29 @@ fn main() {
     let mod_calc   = root + "/cli/fusion_calc.hexa"
     let mod_dse    = root + "/cli/fusion_dse.hexa"
     let mod_verify_cli = root + "/cli/fusion_verify.hexa"
+    // derivative modules (sscb-pattern composition)
+    let mod_margin      = root + "/cli/fusion_margin.hexa"
+    let mod_whatif      = root + "/cli/fusion_whatif.hexa"
+    let mod_sensitivity = root + "/cli/fusion_sensitivity.hexa"
+    let mod_archetype   = root + "/cli/fusion_archetype.hexa"
+    let mod_doctor      = root + "/cli/fusion_doctor.hexa"
+    let mod_status      = root + "/cli/fusion_status.hexa"
+    let mod_pillar      = root + "/cli/fusion_pillar.hexa"
 
     let targets = [
-        ["cli_router",    cli_router],
-        ["fusion_ledger", mod_ledger],
-        ["verify_fusion", mod_verify],
-        ["fusion_calc",   mod_calc],
-        ["fusion_dse",    mod_dse],
-        ["fusion_verify", mod_verify_cli],
+        ["cli_router",         cli_router],
+        ["fusion_ledger",      mod_ledger],
+        ["verify_fusion",      mod_verify],
+        ["fusion_calc",        mod_calc],
+        ["fusion_dse",         mod_dse],
+        ["fusion_verify",      mod_verify_cli],
+        ["fusion_margin",      mod_margin],
+        ["fusion_whatif",      mod_whatif],
+        ["fusion_sensitivity", mod_sensitivity],
+        ["fusion_archetype",   mod_archetype],
+        ["fusion_doctor",      mod_doctor],
+        ["fusion_status",      mod_status],
+        ["fusion_pillar",      mod_pillar],
     ]
 
     let mut all_ok = true

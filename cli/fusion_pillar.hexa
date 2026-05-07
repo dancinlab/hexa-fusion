@@ -1,0 +1,271 @@
+#!hexa strict
+// hexa-fusion/cli/fusion_pillar.hexa — per-pillar deep-dive snapshot.
+//
+// Composition pattern referenced from hexa-sscb verify/sscb_verify.py
+// (per-pillar focused output) — applied to hexa-fusion's 4-pillar
+// tetrahedron (FUSION / TABLETOP_FUSION / FUSION_POWERPLANT / PLASMA_DEEP).
+//
+// Each pillar gets its own closed-form snapshot:
+//   - role / fuel / topology / scope
+//   - n=6 lattice projections specific to that pillar
+//   - status (WIRED / DOC) and what's required to wire
+//   - cross-link to sister repos
+//
+// CLI:
+//   hexa run cli/fusion_pillar.hexa
+//   hexa run cli/fusion_pillar.hexa --pillar fusion       (single pillar)
+//   hexa run cli/fusion_pillar.hexa --json
+//
+// Sentinel: __FUSION_PILLAR__ <PASS|FAIL>
+
+// ─── n=6 anchors ─────────────────────────────────────────────
+
+let SIGMA = 12.0
+let TAU   = 4.0
+let PHI   = 2.0
+let SOPFR = 5.0
+let J2    = 24.0
+let MU    = 1.0
+let N6    = 6.0
+
+// ─── helpers ────────────────────────────────────────────────
+
+fn pad_r(s, w) { let mut r = s; while len(r) < w { r = r + " " }; return r }
+fn pad_l(s, w) { let mut r = s; while len(r) < w { r = " " + r }; return r }
+fn fmt_f(v, decimals) {
+    let factor = pow(10.0, to_float(decimals))
+    let r = round(v * factor) / factor
+    return to_string(r)
+}
+fn fmt_e(v) {
+    if v < 0.0 { return "-" + fmt_e(0.0 - v) }
+    if v < 1.0e-30 { return "0" }
+    let mut e = 0
+    let mut m = v
+    if m >= 10.0 { while m >= 10.0 { m = m / 10.0; e = e + 1 } }
+    else { while m < 1.0  { m = m * 10.0; e = e - 1 } }
+    return fmt_f(m, 2) + "e" + to_string(e)
+}
+fn has_flag(a, flag) { for x in a { if x == flag { return true } }; return false }
+fn arg_after(a, flag) {
+    let mut i = 0
+    while i < len(a) {
+        if a[i] == flag { if i + 1 < len(a) { return a[i + 1] } }
+        i = i + 1
+    }
+    return ""
+}
+
+// ─── pillar projections ─────────────────────────────────────
+
+fn _pillar_fusion() {
+    let n_e_per_m3 = SIGMA * TAU * 1.0e19  // 4.8e20
+    let tau_e = 1.0 / SIGMA
+    let T_keV = SIGMA + PHI
+    let lawson = n_e_per_m3 * tau_e * T_keV
+    return [
+        "fusion", "WIRED v1.0.0", "D-T (¹H + ²H)", "tokamak (ITER scale)",
+        "27-item closed-form ledger + 28-item verify (Lawson + Carnot + Q)",
+        [
+            "n_e   = σ·τ·10¹⁹ = " + fmt_e(n_e_per_m3) + " /m³",
+            "τ_E   = 1/σ s    = " + fmt_f(tau_e, 4)   + " s",
+            "T_i   = σ+φ keV  = " + fmt_f(T_keV, 0)   + " keV",
+            "Q     = σ-φ      = " + fmt_f(SIGMA-PHI, 0),
+            "B     = σ·τ T    = " + fmt_f(SIGMA*TAU, 0) + " T (SC coil)",
+            "η_Bra = σ/J₂     = " + fmt_f(100.0*SIGMA/J2, 0) + " %",
+            "Lawson nτT       = " + fmt_e(lawson) + " keV·s/m³  (1-decade gap to measured 5.6e21)"
+        ],
+        [
+            "26/27 EXACT (96.3 %) closure on D-T ignition",
+            "lawson_triple preserved as honest negative — see .roadmap §A.4 F-FUSION-1"
+        ],
+        "ITER tokamak scale; sister: hexa-rtsc 48 T SC coil"
+    ]
+}
+
+fn _pillar_tabletop() {
+    // Theorem F-TTF: V_tt ≤ 1 m³ = V_ITER·(sopfr/(σ·τ))^τ; Q_tt = τ = 4
+    let v_iter = 840.0
+    let v_tt = v_iter * pow(SOPFR / (SIGMA * TAU), TAU)
+    let q_tt = TAU
+    return [
+        "tabletop_fusion", "DOC v1.0.0", "p-¹¹B (aneutronic)", "FRC β=1 unity",
+        "doc-only seed; numerical impl deferred to v1.2.0",
+        [
+            "V_tt  = V_ITER·(sopfr/(σ·τ))^τ = " + fmt_e(v_tt) + " m³  (target ≤ 1 m³)",
+            "Q_tt  = τ                       = " + fmt_f(q_tt, 0) + "   (break-even)",
+            "fuel  = ¹H + ¹¹B → 3·⁴He        (aneutronic, B-11 = σ-μ = 11)",
+            "T_op  = " + fmt_f(SIGMA*SOPFR, 0) + " keV  (300 keV hot ion limit)"
+        ],
+        [
+            "Theorem F-TTF (1 m³ p-¹¹B FRC closure) preregistered",
+            "F-FUSION-2 falsifier: tabletop p-11B 1m³ Q=τ=4 break-even validation"
+        ],
+        "compares to ITER 840 m³ D-T 500 MW; tabletop 1 m³ p-¹¹B 8.7 kW"
+    ]
+}
+
+fn _pillar_powerplant() {
+    let q_gain = SIGMA - PHI
+    let b_field = SIGMA * TAU
+    let eta = SIGMA / J2 * 100.0
+    return [
+        "fusion_powerplant", "DOC v1.0.0", "D-T (KSTAR-N6)", "tokamak commercial",
+        "doc-only seed; closed-form Q≥10 design space",
+        [
+            "Q     = σ-φ      = " + fmt_f(q_gain, 0)  + "   (commercial threshold)",
+            "B_TF  = σ·τ T    = " + fmt_f(b_field, 0) + " T (RT-SC coil)",
+            "η_Bra = σ/J₂     = " + fmt_f(eta, 0)     + " % (Brayton)",
+            "T_i   = σ+φ keV  = " + fmt_f(SIGMA+PHI, 0) + " keV",
+            "P_fus/V = φ·sopfr= " + fmt_f(PHI*SOPFR, 0) + " MW/m³"
+        ],
+        [
+            "F-FUSION-3 falsifier: KSTAR-N6 RT-SC coil 48 T realisation → Q=σ-φ=10",
+            "DSE wired (cli/fusion_dse.hexa) for design-space sweep"
+        ],
+        "KSTAR-N6 powerplant; sister: hexa-rtsc (RT-SC primary)"
+    ]
+}
+
+fn _pillar_plasma_deep() {
+    return [
+        "plasma_deep", "DOC v1.0.0", "all", "reduced-MHD",
+        "doc-only seed; reduced-MHD solver deferred to v1.3.0",
+        [
+            "scope: plasma physics deep-dive (kinetic / fluid / MHD)",
+            "n=6 anchors: σ, τ, φ inherited from FUSION pillar",
+            "v1.3.0 target: reduced-MHD solver wired"
+        ],
+        [
+            "no specific falsifier yet — solver-driven cross-checks pending v1.3.0",
+            "currently consumes other pillars' n=6 outputs"
+        ],
+        "cross-domain: feeds into FUSION + TABLETOP + POWERPLANT"
+    ]
+}
+
+fn _all_pillars() {
+    return [_pillar_fusion(), _pillar_tabletop(), _pillar_powerplant(), _pillar_plasma_deep()]
+}
+
+// ─── runner ─────────────────────────────────────────────────
+
+fn _print_pillar(p) {
+    let id = p[0]
+    let status = p[1]
+    let fuel = p[2]
+    let topo = p[3]
+    let summary = p[4]
+    let projections = p[5]
+    let notes = p[6]
+    let xlink = p[7]
+
+    println("  ── " + id + "  [" + status + "] ──")
+    println("    fuel       : " + fuel)
+    println("    topology   : " + topo)
+    println("    summary    : " + summary)
+    println("    n=6 projections:")
+    let mut i = 0
+    while i < len(projections) {
+        println("      · " + projections[i])
+        i = i + 1
+    }
+    println("    notes:")
+    let mut k = 0
+    while k < len(notes) {
+        println("      · " + notes[k])
+        k = k + 1
+    }
+    println("    cross-link : " + xlink)
+    println("")
+}
+
+fn run(user_args, json_mode) {
+    let pillars = _all_pillars()
+    let pf = arg_after(user_args, "--pillar")
+    let mut subset = pillars
+    if len(pf) > 0 {
+        let mut filtered: [array] = []
+        let mut i = 0
+        while i < len(pillars) {
+            if pillars[i][0] == pf { filtered = filtered + [pillars[i]] }
+            i = i + 1
+        }
+        subset = filtered
+    }
+
+    if json_mode {
+        let mut js = "{\"hexa_fusion_pillar\":\"1.0\",\"pillars\":["
+        let mut a = 0
+        while a < len(subset) {
+            let p = subset[a]
+            if a > 0 { js = js + "," }
+            js = js + "{\"id\":\"" + p[0] + "\""
+            js = js + ",\"status\":\"" + p[1] + "\""
+            js = js + ",\"fuel\":\"" + p[2] + "\""
+            js = js + ",\"topology\":\"" + p[3] + "\""
+            js = js + ",\"summary\":\"" + p[4].replace("\"", "\\\"") + "\""
+            js = js + ",\"projections\":["
+            let mut k = 0
+            while k < len(p[5]) {
+                if k > 0 { js = js + "," }
+                js = js + "\"" + p[5][k].replace("\"", "\\\"") + "\""
+                k = k + 1
+            }
+            js = js + "],\"cross_link\":\"" + p[7].replace("\"", "\\\"") + "\"}"
+            a = a + 1
+        }
+        js = js + "]}"
+        println(js)
+        if len(subset) > 0 {
+            println("__FUSION_PILLAR__ PASS")
+        } else {
+            println("__FUSION_PILLAR__ FAIL reason=unknown_pillar=" + pf)
+            exit(1)
+        }
+        return
+    }
+
+    println("=" + "=".repeat(74))
+    println("  hexa-fusion pillar — 4-pillar tetrahedron deep-dive")
+    println("=" + "=".repeat(74))
+    println("")
+
+    if len(subset) == 0 {
+        println("  ERROR: no pillar matches --pillar " + pf)
+        println("  available: fusion / tabletop_fusion / fusion_powerplant / plasma_deep")
+        println("__FUSION_PILLAR__ FAIL reason=unknown_pillar=" + pf)
+        exit(1)
+    }
+
+    let mut i = 0
+    while i < len(subset) {
+        _print_pillar(subset[i])
+        i = i + 1
+    }
+
+    println("__FUSION_PILLAR__ PASS")
+}
+
+// ─── main ────────────────────────────────────────────────
+
+fn main() {
+    let raw = args()
+    let mut user: [str] = []
+    let mut started = false
+    let mut i = 0
+    while i < len(raw) {
+        if started { user = user + [raw[i]] }
+        if raw[i].ends_with(".hexa") { started = true }
+        i = i + 1
+    }
+
+    if has_flag(user, "--help") || has_flag(user, "-h") {
+        println("usage: hexa run cli/fusion_pillar.hexa [--pillar <id>] [--json]")
+        println("  --pillar  fusion | tabletop_fusion | fusion_powerplant | plasma_deep")
+        return
+    }
+
+    let json_mode = has_flag(user, "--json")
+    run(user, json_mode)
+}

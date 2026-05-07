@@ -1,0 +1,243 @@
+#!hexa strict
+// hexa-fusion/cli/fusion_doctor.hexa — env health probe.
+//
+// Composition pattern referenced from hexa-sscb verify/sscb_verify.py
+// (env-readiness check) — applied to hexa-fusion's runtime stack.
+//
+// Probes:
+//   1. hexa runtime version + path
+//   2. HEXA_FUSION_ROOT resolution (env or inferred)
+//   3. canonical entry        cli/hexa-fusion.hexa
+//   4. 4 sub-command modules  cli/fusion_calc / fusion_dse / fusion_verify
+//                              + fusion/module/fusion_ledger
+//   5. new derivative modules cli/fusion_margin / fusion_whatif
+//                              fusion_sensitivity / fusion_archetype
+//                              fusion_status / fusion_pillar
+//   6. roadmap                .roadmap.hexa_fusion
+//   7. examples / docs        examples/iter_q10_closed_form.md
+//   8. hx package install     ~/.hx/bin/hexa-fusion shim
+//
+// Each probe reports OK | WARN | MISS with a remediation hint.
+//
+// CLI:
+//   hexa run cli/fusion_doctor.hexa
+//   hexa run cli/fusion_doctor.hexa --json
+//   hexa run cli/fusion_doctor.hexa --strict   (WARN→FAIL)
+//
+// Sentinel: __FUSION_DOCTOR__ <PASS|FAIL> [reason=<slug>]
+
+// ─── helpers ───────────────────────────────────────────────────
+
+fn has_flag(a, flag) { for x in a { if x == flag { return true } }; return false }
+
+fn _exists(p) {
+    let r = exec("[ -e \"" + p + "\" ] && echo y || echo n").trim()
+    return r == "y"
+}
+
+fn _is_file(p) {
+    let r = exec("[ -f \"" + p + "\" ] && echo y || echo n").trim()
+    return r == "y"
+}
+
+fn _is_dir(p) {
+    let r = exec("[ -d \"" + p + "\" ] && echo y || echo n").trim()
+    return r == "y"
+}
+
+fn _which(cmd) {
+    return exec("command -v " + cmd + " 2>/dev/null || true").trim()
+}
+
+fn _resolve_root() {
+    let env_root = env("HEXA_FUSION_ROOT")
+    if len(env_root) > 0 { return env_root }
+    let pwd = exec("pwd").trim()
+    // if we're inside a hexa-fusion checkout, use that
+    if _is_file(pwd + "/cli/hexa-fusion.hexa") { return pwd }
+    // installed package
+    let inst = env("HOME") + "/.hx/packages/hexa-fusion"
+    if _is_file(inst + "/cli/hexa-fusion.hexa") { return inst }
+    return pwd
+}
+
+// ─── probes ────────────────────────────────────────────────────
+
+fn _probe_runtime() {
+    let h = _which("hexa")
+    if len(h) == 0 {
+        return ["hexa runtime", "MISS", "", "install via brew/cargo or follow hexa-lang README"]
+    }
+    let v = exec(h + " --version 2>/dev/null || echo ?").trim()
+    return ["hexa runtime", "OK", h + "  (" + v + ")", ""]
+}
+
+fn _probe_hx() {
+    let h = _which("hx")
+    if len(h) == 0 {
+        return ["hx package mgr", "WARN", "", "optional — only needed for `hx install hexa-fusion`"]
+    }
+    return ["hx package mgr", "OK", h, ""]
+}
+
+fn _probe_hexa_fusion_shim() {
+    let shim = env("HOME") + "/.hx/bin/hexa-fusion"
+    if _is_file(shim) { return ["hx-installed shim", "OK", shim, ""] }
+    return ["hx-installed shim", "WARN",
+            "(not installed)",
+            "run `hx install hexa-fusion` (or `hx install /Users/.../hexa-fusion --entry cli/hexa-fusion.hexa` for local)"]
+}
+
+fn _probe_root() {
+    let r = _resolve_root()
+    if !_is_dir(r) {
+        return ["HEXA_FUSION_ROOT", "MISS", r, "set HEXA_FUSION_ROOT or cd into a hexa-fusion checkout"]
+    }
+    return ["HEXA_FUSION_ROOT", "OK", r, ""]
+}
+
+fn _probe_file(label, root, rel) {
+    let p = root + "/" + rel
+    if _is_file(p) { return [label, "OK", p, ""] }
+    return [label, "MISS", p, "extract from n6-architecture or pull latest hexa-fusion"]
+}
+
+fn _probe_optional(label, root, rel) {
+    let p = root + "/" + rel
+    if _is_file(p) { return [label, "OK", p, ""] }
+    return [label, "WARN", p, "(optional new module — write/extract as needed)"]
+}
+
+// ─── runner ────────────────────────────────────────────────────
+
+fn run(user_args, json_mode) {
+    let strict = has_flag(user_args, "--strict")
+    let root = _resolve_root()
+
+    let probes = [
+        _probe_runtime(),
+        _probe_hx(),
+        _probe_hexa_fusion_shim(),
+        _probe_root(),
+        _probe_file("canonical entry",      root, "cli/hexa-fusion.hexa"),
+        _probe_file("module: fusion_ledger", root, "fusion/module/fusion_ledger.hexa"),
+        _probe_file("module: verify_fusion", root, "fusion/module/verify_fusion.hexa"),
+        _probe_file("cli: fusion_calc",      root, "cli/fusion_calc.hexa"),
+        _probe_file("cli: fusion_dse",       root, "cli/fusion_dse.hexa"),
+        _probe_file("cli: fusion_verify",    root, "cli/fusion_verify.hexa"),
+        _probe_optional("cli: fusion_margin",      root, "cli/fusion_margin.hexa"),
+        _probe_optional("cli: fusion_whatif",      root, "cli/fusion_whatif.hexa"),
+        _probe_optional("cli: fusion_sensitivity", root, "cli/fusion_sensitivity.hexa"),
+        _probe_optional("cli: fusion_archetype",   root, "cli/fusion_archetype.hexa"),
+        _probe_optional("cli: fusion_status",      root, "cli/fusion_status.hexa"),
+        _probe_optional("cli: fusion_pillar",      root, "cli/fusion_pillar.hexa"),
+        _probe_optional("cli: fusion_doctor",      root, "cli/fusion_doctor.hexa"),
+        _probe_file("roadmap",  root, ".roadmap.hexa_fusion"),
+        _probe_file("examples", root, "examples/iter_q10_closed_form.md"),
+        _probe_file("install hook", root, "install.hexa"),
+        _probe_file("test selftest",root, "tests/test_selftest.hexa")
+    ]
+
+    let mut n_ok = 0
+    let mut n_warn = 0
+    let mut n_miss = 0
+    let mut p = 0
+    while p < len(probes) {
+        let pr = probes[p]
+        if pr[1] == "OK" { n_ok = n_ok + 1 }
+        else if pr[1] == "WARN" { n_warn = n_warn + 1 }
+        else if pr[1] == "MISS" { n_miss = n_miss + 1 }
+        p = p + 1
+    }
+
+    if json_mode {
+        let mut js = "{\"hexa_fusion_doctor\":\"1.0\",\"root\":\"" + root + "\""
+        js = js + ",\"summary\":{\"ok\":" + to_string(n_ok) + ",\"warn\":" + to_string(n_warn) + ",\"miss\":" + to_string(n_miss) + "}"
+        js = js + ",\"probes\":["
+        let mut q = 0
+        while q < len(probes) {
+            let pr = probes[q]
+            if q > 0 { js = js + "," }
+            js = js + "{\"label\":\"" + pr[0] + "\",\"status\":\"" + pr[1] + "\""
+            js = js + ",\"path\":\"" + pr[2].replace("\"", "\\\"") + "\""
+            js = js + ",\"hint\":\"" + pr[3].replace("\"", "\\\"") + "\"}"
+            q = q + 1
+        }
+        js = js + "]}"
+        println(js)
+        let pass = if strict { (n_miss == 0 && n_warn == 0) } else { n_miss == 0 }
+        if pass {
+            println("__FUSION_DOCTOR__ PASS")
+        } else {
+            println("__FUSION_DOCTOR__ FAIL reason=miss=" + to_string(n_miss) + "_warn=" + to_string(n_warn))
+            exit(1)
+        }
+        return
+    }
+
+    println("=" + "=".repeat(74))
+    println("  hexa-fusion doctor — env + module health probe")
+    println("=" + "=".repeat(74))
+    println("  resolved root: " + root)
+    println("  strict mode:   " + (if strict { "ON (WARN→FAIL)" } else { "OFF (WARN tolerated)" }))
+    println("")
+
+    let mut q = 0
+    while q < len(probes) {
+        let pr = probes[q]
+        let mark = if pr[1] == "OK" { "✓" }
+                   else if pr[1] == "WARN" { "~" }
+                   else { "✗" }
+        let label = pr[0]
+        let status = pr[1]
+        let path = pr[2]
+        let hint = pr[3]
+        // pad
+        let mut row = "  " + mark + " " + label
+        let pad_target = 28
+        while len(row) < pad_target { row = row + " " }
+        row = row + "[" + status + "]  " + path
+        println(row)
+        if len(hint) > 0 && (status != "OK") {
+            println("        hint: " + hint)
+        }
+        q = q + 1
+    }
+
+    println("")
+    println("  totals: OK=" + to_string(n_ok) +
+            "  WARN=" + to_string(n_warn) +
+            "  MISS=" + to_string(n_miss))
+
+    let pass = if strict { (n_miss == 0 && n_warn == 0) } else { n_miss == 0 }
+    if pass {
+        println("__FUSION_DOCTOR__ PASS")
+    } else {
+        println("__FUSION_DOCTOR__ FAIL reason=miss=" + to_string(n_miss) + "_warn=" + to_string(n_warn))
+        exit(1)
+    }
+}
+
+// ─── main ───────────────────────────────────────────────────────
+
+fn main() {
+    let raw = args()
+    let mut user: [str] = []
+    let mut started = false
+    let mut i = 0
+    while i < len(raw) {
+        if started { user = user + [raw[i]] }
+        if raw[i].ends_with(".hexa") { started = true }
+        i = i + 1
+    }
+
+    if has_flag(user, "--help") || has_flag(user, "-h") {
+        println("usage: hexa run cli/fusion_doctor.hexa [--strict] [--json]")
+        println("  --strict  treat WARN as FAIL")
+        println("  --json    machine-parseable output")
+        return
+    }
+
+    let json_mode = has_flag(user, "--json")
+    run(user, json_mode)
+}

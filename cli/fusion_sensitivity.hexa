@@ -1,0 +1,283 @@
+#!hexa strict
+// hexa-fusion/cli/fusion_sensitivity.hexa — n=6 lattice sensitivity sweep.
+//
+// Composition pattern referenced from hexa-sscb verify/sscb_verify.py
+// (perturb-and-recount semantics) — applied to the hexa-fusion 27-row
+// ledger.
+//
+// For each n=6 anchor (σ, τ, φ, sopfr, J₂, μ, n) the sweep multiplies the
+// canonical value by {±1%, ±5%, ±10%, ±20%} (configurable) and reports the
+// resulting EXACT-count drop. Anchors that drop the most rows are the
+// dominant levers; anchors that drop nothing are decorative downstream.
+//
+// CLI:
+//   hexa run cli/fusion_sensitivity.hexa
+//   hexa run cli/fusion_sensitivity.hexa --json
+//   hexa run cli/fusion_sensitivity.hexa --steps "0.01,0.05,0.10,0.20"
+//
+// Sentinel: __FUSION_SENSITIVITY__ <PASS|FAIL> [reason=<slug>]
+//
+// PASS iff baseline reproduces 26/27. (The sweep itself is exploratory; we
+// do not gate on perturbation results — only on baseline integrity.)
+//
+// Cost: $0 (~7 anchors × 8 perturbations = 56 ledger evals; <50 ms).
+
+// ─── helpers ────────────────────────────────────────────────────
+
+fn pad_r(s, w) { let mut r = s; while len(r) < w { r = r + " " }; return r }
+fn pad_l(s, w) { let mut r = s; while len(r) < w { r = " " + r }; return r }
+fn fabs(x) { if x < 0.0 { return 0.0 - x }; return x }
+fn fmt_f(v, decimals) {
+    let factor = pow(10.0, to_float(decimals))
+    let r = round(v * factor) / factor
+    return to_string(r)
+}
+fn has_flag(a, flag) {
+    for x in a { if x == flag { return true } }
+    return false
+}
+fn arg_after(a, flag) {
+    let mut i = 0
+    while i < len(a) {
+        if a[i] == flag {
+            if i + 1 < len(a) { return a[i + 1] }
+        }
+        i = i + 1
+    }
+    return ""
+}
+
+// ─── ledger evaluator (mirrors fusion_whatif structure) ────────
+
+fn _eval(SIGMA, TAU, PHI, SOPFR, J2, MU, N6) {
+    let measured = [
+        6.0,2.0,4.0,12.0,5.0,24.0,48.0,10.0,0.1,1.0,6.0,2.0,3.0,4.0,20.0,80.0,
+        14.0,10.0,6.0,7.0,6.0,50.0,18.0,0.083,5.6e21,10.0,4.0
+    ]
+    let q_gain  = SIGMA - PHI
+    let crit_r  = if (SIGMA - PHI) == 0.0 { 0.0 } else { 1.0 / (SIGMA - PHI) }
+    let brayton = 100.0 * SIGMA / J2
+    let alpha_e = 100.0 / SOPFR
+    let neut_e  = 100.0 * TAU / SOPFR
+    let plasma  = SIGMA + PHI
+    let tau_e   = if SIGMA == 0.0 { 0.0 } else { 1.0 / SIGMA }
+    let lawson  = (SIGMA * TAU * 1.0e19) * (1.0 / SIGMA) * (SIGMA + PHI)
+    let p_fus   = PHI * SOPFR
+    let ruler   = SIGMA * TAU
+    let speed   = SIGMA - PHI
+    let formula = [
+        N6, PHI, TAU, SIGMA, SOPFR, J2, ruler, speed, crit_r, MU, N6, PHI,
+        N6 / PHI, TAU, alpha_e, neut_e, plasma, q_gain, N6, N6 + 1.0, N6,
+        brayton, 3.0 * N6, tau_e, lawson, p_fus, TAU
+    ]
+    let tol = [
+        0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0e-6,0.0,0.0,0.0,0.0,0.0,0.05,0.05,
+        0.0,0.0,0.0,0.0,0.0,0.05,0.0,0.01,0.001,0.0,0.0
+    ]
+    return [measured, formula, tol]
+}
+
+fn _count_match(table) {
+    let measured = table[0]
+    let formula = table[1]
+    let tol = table[2]
+    let mut mc = 0
+    let mut i = 0
+    while i < len(measured) {
+        let delta = fabs(measured[i] - formula[i])
+        let denom = if fabs(measured[i]) < 1.0e-30 { 1.0e-30 } else { fabs(measured[i]) }
+        let ratio = delta / denom
+        let ok = if delta < 1.0e-12 { true }
+                 else if tol[i] == 0.0 { false }
+                 else if ratio <= tol[i] { true }
+                 else { false }
+        if ok { mc = mc + 1 }
+        i = i + 1
+    }
+    return mc
+}
+
+// ─── sweep one anchor ───────────────────────────────────────────
+
+fn _sweep(name, baseline, steps) {
+    // returns parallel arrays: factor, match_count, delta
+    let mut factors: [float] = []
+    let mut matches: [int] = []
+    let mut deltas: [int] = []
+    let mut i = 0
+    while i < len(steps) {
+        let dpct = steps[i]
+        // try +dpct then -dpct
+        let factor_pos = 1.0 + dpct
+        let factor_neg = 1.0 - dpct
+        factors = factors + [factor_pos, factor_neg]
+        i = i + 1
+    }
+    let mut out_match: [int] = []
+    let mut out_delta: [int] = []
+    let mut k = 0
+    while k < len(factors) {
+        let f = factors[k]
+        let perturbed = baseline * f
+        let table = if name == "sigma" { _eval(perturbed, 4.0, 2.0, 5.0, 24.0, 1.0, 6.0) }
+                    else if name == "tau" { _eval(12.0, perturbed, 2.0, 5.0, 24.0, 1.0, 6.0) }
+                    else if name == "phi" { _eval(12.0, 4.0, perturbed, 5.0, 24.0, 1.0, 6.0) }
+                    else if name == "sopfr" { _eval(12.0, 4.0, 2.0, perturbed, 24.0, 1.0, 6.0) }
+                    else if name == "j2"  { _eval(12.0, 4.0, 2.0, 5.0, perturbed, 1.0, 6.0) }
+                    else if name == "mu"  { _eval(12.0, 4.0, 2.0, 5.0, 24.0, perturbed, 6.0) }
+                    else if name == "n"   { _eval(12.0, 4.0, 2.0, 5.0, 24.0, 1.0, perturbed) }
+                    else { _eval(12.0, 4.0, 2.0, 5.0, 24.0, 1.0, 6.0) }
+        let mc = _count_match(table)
+        out_match = out_match + [mc]
+        out_delta = out_delta + [mc - 26]   // baseline match = 26
+        k = k + 1
+    }
+    return [factors, out_match, out_delta]
+}
+
+fn _parse_steps(s) {
+    if len(s) == 0 { return [0.01, 0.05, 0.10, 0.20] }
+    let parts = s.split(",")
+    let mut out: [float] = []
+    let mut i = 0
+    while i < len(parts) {
+        out = out + [to_float(parts[i].trim())]
+        i = i + 1
+    }
+    return out
+}
+
+// ─── runner ─────────────────────────────────────────────────────
+
+fn run(user_args, json_mode) {
+    let baseline = _eval(12.0, 4.0, 2.0, 5.0, 24.0, 1.0, 6.0)
+    let base_match = _count_match(baseline)
+
+    let steps_str = arg_after(user_args, "--steps")
+    let steps = _parse_steps(steps_str)
+
+    let anchors = ["sigma", "tau", "phi", "sopfr", "j2", "mu", "n"]
+    let baselines = [12.0, 4.0, 2.0, 5.0, 24.0, 1.0, 6.0]
+
+    if json_mode {
+        let mut js = "{\"hexa_fusion_sensitivity\":\"1.0\""
+        js = js + ",\"baseline_match\":" + to_string(base_match)
+        js = js + ",\"steps\":["
+        let mut s = 0
+        while s < len(steps) {
+            if s > 0 { js = js + "," }
+            js = js + fmt_f(steps[s], 6)
+            s = s + 1
+        }
+        js = js + "]"
+        js = js + ",\"sweeps\":["
+        let mut a = 0
+        while a < len(anchors) {
+            let r = _sweep(anchors[a], baselines[a], steps)
+            let factors = r[0]
+            let matches = r[1]
+            let deltas = r[2]
+            if a > 0 { js = js + "," }
+            js = js + "{\"anchor\":\"" + anchors[a] + "\",\"baseline\":" + fmt_f(baselines[a], 6)
+            js = js + ",\"points\":["
+            let mut p = 0
+            while p < len(factors) {
+                if p > 0 { js = js + "," }
+                js = js + "{\"factor\":" + fmt_f(factors[p], 4)
+                js = js + ",\"match\":" + to_string(matches[p])
+                js = js + ",\"delta\":" + to_string(deltas[p]) + "}"
+                p = p + 1
+            }
+            js = js + "]}"
+            a = a + 1
+        }
+        js = js + "}"
+        println(js)
+        if base_match == 26 {
+            println("__FUSION_SENSITIVITY__ PASS")
+        } else {
+            println("__FUSION_SENSITIVITY__ FAIL reason=baseline_drift=" + to_string(base_match))
+            exit(1)
+        }
+        return
+    }
+
+    println("=" + "=".repeat(74))
+    println("  hexa-fusion sensitivity — n=6 lattice perturbation sweep")
+    println("=" + "=".repeat(74))
+    println("  baseline (canonical n=6): " + to_string(base_match) + "/27 match")
+    print("  perturbation steps: ±")
+    let mut ss = 0
+    while ss < len(steps) {
+        if ss > 0 { print(" ±") }
+        print(fmt_f(steps[ss] * 100.0, 1) + "%")
+        ss = ss + 1
+    }
+    println("")
+    println("")
+
+    // header
+    let mut hdr = "  " + pad_r("anchor", 10)
+    let mut h = 0
+    while h < len(steps) {
+        let p = fmt_f(steps[h] * 100.0, 1) + "%"
+        hdr = hdr + pad_l("+" + p, 9) + pad_l("-" + p, 9)
+        h = h + 1
+    }
+    hdr = hdr + pad_l("worst Δ", 11)
+    println(hdr)
+    println("  " + "-".repeat(78))
+
+    let mut a2 = 0
+    while a2 < len(anchors) {
+        let r = _sweep(anchors[a2], baselines[a2], steps)
+        let matches = r[1]
+        let deltas = r[2]
+        let mut row = "  " + pad_r(anchors[a2], 10)
+        let mut worst = 0
+        let mut k = 0
+        while k < len(matches) {
+            row = row + pad_l(to_string(matches[k]), 9)
+            if deltas[k] < worst { worst = deltas[k] }
+            k = k + 1
+        }
+        row = row + pad_l(to_string(worst), 11)
+        println(row)
+        a2 = a2 + 1
+    }
+    println("")
+    println("  reading guide:")
+    println("    cell   = match-count after perturbing anchor by signed %")
+    println("    worst Δ = worst (most negative) drop from 26/27 baseline")
+    println("    larger |Δ| ⇒ anchor is dominant lever; |Δ|=0 ⇒ decorative downstream")
+    println("")
+
+    if base_match == 26 {
+        println("__FUSION_SENSITIVITY__ PASS  (baseline 26/27 reproduced)")
+    } else {
+        println("__FUSION_SENSITIVITY__ FAIL  (baseline drifted to " + to_string(base_match) + "/27)")
+        exit(1)
+    }
+}
+
+// ─── main ───────────────────────────────────────────────────────
+
+fn main() {
+    let raw = args()
+    let mut user: [str] = []
+    let mut started = false
+    let mut i = 0
+    while i < len(raw) {
+        if started { user = user + [raw[i]] }
+        if raw[i].ends_with(".hexa") { started = true }
+        i = i + 1
+    }
+
+    if has_flag(user, "--help") || has_flag(user, "-h") {
+        println("usage: hexa run cli/fusion_sensitivity.hexa [--steps \"0.01,0.05,0.10,0.20\"] [--json]")
+        return
+    }
+
+    let json_mode = has_flag(user, "--json")
+    run(user, json_mode)
+}

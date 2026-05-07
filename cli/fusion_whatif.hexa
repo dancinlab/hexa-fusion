@@ -1,0 +1,308 @@
+#!hexa strict
+// hexa-fusion/cli/fusion_whatif.hexa — n=6 lattice override + ledger re-run.
+//
+// Composition pattern referenced from hexa-sscb verify/sscb_verify.py
+// (override semantics) — applied to the hexa-fusion 27-row ledger.
+//
+// CLI:
+//   hexa run cli/fusion_whatif.hexa
+//       baseline run (no override) — should reproduce 26/27 EXACT.
+//   hexa run cli/fusion_whatif.hexa --set sigma=12 --set tau=4 --set phi=2
+//       explicit pin (same as baseline).
+//   hexa run cli/fusion_whatif.hexa --set sigma=11
+//       counter-factual: σ=11 (a non-perfect σ) — most rows BREACH.
+//   hexa run cli/fusion_whatif.hexa --set lawson_calibration=10
+//       multiply lawson_triple's closed-form by 10 — closes the honest
+//       negative on paper. Useful to inspect what calibration factor would
+//       resolve F-FUSION-1 if measurement updates. Reports "what if".
+//
+// Overridable keys: sigma, tau, phi, sopfr, j2, mu, n, lawson_calibration
+//
+// Output: side-by-side diff vs baseline. Sentinel:
+//   __FUSION_WHATIF__ <PASS|FAIL> [reason=<slug>]
+//
+// PASS means the override either reproduces 26/27 baseline OR is explicitly
+// labelled as a counter-factual (--counter-factual flag) and produces the
+// announced delta.
+
+// ─── helpers ────────────────────────────────────────────────────
+
+fn pad_r(s, w) { let mut r = s; while len(r) < w { r = r + " " }; return r }
+fn pad_l(s, w) { let mut r = s; while len(r) < w { r = " " + r }; return r }
+fn fabs(x) { if x < 0.0 { return 0.0 - x }; return x }
+
+fn fmt_f(v, decimals) {
+    let factor = pow(10.0, to_float(decimals))
+    let r = round(v * factor) / factor
+    return to_string(r)
+}
+
+fn has_flag(a, flag) {
+    for x in a { if x == flag { return true } }
+    return false
+}
+
+fn _split_eq(s) {
+    // returns [key, val_str] from "key=val"; if no '=', returns ["", s].
+    let parts = s.split("=")
+    if len(parts) == 2 { return [parts[0], parts[1]] }
+    return ["", s]
+}
+
+fn _parse_overrides(user_args) {
+    // collects all `--set k=v` pairs into parallel arrays.
+    let mut keys: [str] = []
+    let mut vals: [float] = []
+    let mut i = 0
+    while i < len(user_args) {
+        if user_args[i] == "--set" && i + 1 < len(user_args) {
+            let kv = _split_eq(user_args[i + 1])
+            if kv[0] != "" {
+                keys = keys + [kv[0]]
+                vals = vals + [to_float(kv[1])]
+            }
+            i = i + 2
+        } else {
+            i = i + 1
+        }
+    }
+    return [keys, vals]
+}
+
+fn _resolve(keys, vals, name, default_val) {
+    let mut i = 0
+    while i < len(keys) {
+        if keys[i] == name { return vals[i] }
+        i = i + 1
+    }
+    return default_val
+}
+
+// ─── ledger evaluator with overridable lattice ─────────────────
+
+fn _evaluate(SIGMA, TAU, PHI, SOPFR, J2, MU, N6, lawson_cal) {
+    // returns parallel arrays: names, measured, formula, tol
+    let names = [
+        "n_basic_unit","dual_symmetry_phi","parallel_channels_tau","integration_output_sigma",
+        "sopfr_prime_factor_sum","dual_J2","ruler_field_T","speed_limit","critical_radius_m",
+        "mu_squarefree","se3_dim","deuterium_mass_number","tritium_mass_number",
+        "alpha_mass_number","alpha_energy_fraction_pct","neutron_energy_fraction_pct",
+        "plasma_temperature_keV","Q_gain","Li6_mass_number","TBR_numerator","TBR_denominator",
+        "brayton_efficiency_pct","TF_coils","energy_confinement_time_s",
+        "lawson_triple_keV_s_per_m3","P_fus_per_V_MWm3","B4_scaling_exponent"
+    ]
+    let measured = [
+        6.0,2.0,4.0,12.0,5.0,24.0,48.0,10.0,0.1,1.0,6.0,2.0,3.0,4.0,20.0,80.0,
+        14.0,10.0,6.0,7.0,6.0,50.0,18.0,0.083,5.6e21,10.0,4.0
+    ]
+    let q_gain  = SIGMA - PHI
+    let crit_r  = if (SIGMA - PHI) == 0.0 { 0.0 } else { 1.0 / (SIGMA - PHI) }
+    let brayton = 100.0 * SIGMA / J2
+    let alpha_e = 100.0 / SOPFR
+    let neut_e  = 100.0 * TAU / SOPFR
+    let plasma  = SIGMA + PHI
+    let tau_e   = if SIGMA == 0.0 { 0.0 } else { 1.0 / SIGMA }
+    let lawson  = lawson_cal * (SIGMA * TAU * 1.0e19) * (1.0 / SIGMA) * (SIGMA + PHI)
+    let p_fus   = PHI * SOPFR
+    let ruler   = SIGMA * TAU
+    let speed   = SIGMA - PHI
+    let formula = [
+        N6, PHI, TAU, SIGMA, SOPFR, J2, ruler, speed, crit_r, MU, N6, PHI,
+        N6 / PHI, TAU, alpha_e, neut_e, plasma, q_gain, N6, N6 + 1.0, N6,
+        brayton, 3.0 * N6, tau_e, lawson, p_fus, TAU
+    ]
+    let tol = [
+        0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0e-6,0.0,0.0,0.0,0.0,0.0,0.05,0.05,
+        0.0,0.0,0.0,0.0,0.0,0.05,0.0,0.01,0.001,0.0,0.0
+    ]
+    return [names, measured, formula, tol]
+}
+
+fn _grade(measured, formula, tol) {
+    let delta = fabs(measured - formula)
+    if delta < 1.0e-12 { return "EXACT" }
+    let denom = if fabs(measured) < 1.0e-30 { 1.0e-30 } else { fabs(measured) }
+    let ratio = delta / denom
+    if tol == 0.0 { return "BREACH" }
+    if ratio <= tol { return "MATCH" }
+    return "BREACH"
+}
+
+fn _count_match(table) {
+    let names = table[0]
+    let measured = table[1]
+    let formula = table[2]
+    let tol = table[3]
+    let mut mc = 0
+    let mut bc = 0
+    let mut i = 0
+    while i < len(names) {
+        let g = _grade(measured[i], formula[i], tol[i])
+        if g == "EXACT" || g == "MATCH" { mc = mc + 1 } else { bc = bc + 1 }
+        i = i + 1
+    }
+    return [mc, bc]
+}
+
+// ─── runner ─────────────────────────────────────────────────────
+
+fn run(user_args, json_mode) {
+    let ov = _parse_overrides(user_args)
+    let ks = ov[0]
+    let vs = ov[1]
+
+    let SIGMA = _resolve(ks, vs, "sigma", 12.0)
+    let TAU   = _resolve(ks, vs, "tau",    4.0)
+    let PHI   = _resolve(ks, vs, "phi",    2.0)
+    let SOPFR = _resolve(ks, vs, "sopfr",  5.0)
+    let J2    = _resolve(ks, vs, "j2",    24.0)
+    let MU    = _resolve(ks, vs, "mu",     1.0)
+    let N6    = _resolve(ks, vs, "n",      6.0)
+    let LCAL  = _resolve(ks, vs, "lawson_calibration", 1.0)
+
+    // baseline (no override)
+    let base = _evaluate(12.0, 4.0, 2.0, 5.0, 24.0, 1.0, 6.0, 1.0)
+    let bcnt = _count_match(base)
+    let b_match = bcnt[0]
+    let b_breach = bcnt[1]
+
+    let cf = _evaluate(SIGMA, TAU, PHI, SOPFR, J2, MU, N6, LCAL)
+    let ccnt = _count_match(cf)
+    let c_match = ccnt[0]
+    let c_breach = ccnt[1]
+
+    // diff
+    let names = base[0]
+    let bm = base[1]; let bf = base[2]; let bt = base[3]
+    let cf_names = cf[0]
+    let cm = cf[1]; let cf_f = cf[2]; let ct = cf[3]
+
+    let mut transitions: [str] = []
+    let mut t_names: [str] = []
+    let mut t_b_grade: [str] = []
+    let mut t_c_grade: [str] = []
+    let mut i = 0
+    while i < len(names) {
+        let bg = _grade(bm[i], bf[i], bt[i])
+        let cg = _grade(cm[i], cf_f[i], ct[i])
+        if bg != cg {
+            t_names = t_names + [names[i]]
+            t_b_grade = t_b_grade + [bg]
+            t_c_grade = t_c_grade + [cg]
+        }
+        i = i + 1
+    }
+
+    if json_mode {
+        let mut js = "{\"hexa_fusion_whatif\":\"1.0\""
+        js = js + ",\"override\":{"
+        let mut o = 0
+        while o < len(ks) {
+            if o > 0 { js = js + "," }
+            js = js + "\"" + ks[o] + "\":" + fmt_f(vs[o], 6)
+            o = o + 1
+        }
+        js = js + "}"
+        js = js + ",\"baseline\":{\"match\":" + to_string(b_match) + ",\"breach\":" + to_string(b_breach) + "}"
+        js = js + ",\"counterfactual\":{\"match\":" + to_string(c_match) + ",\"breach\":" + to_string(c_breach) + "}"
+        js = js + ",\"transitions\":["
+        let mut t = 0
+        while t < len(t_names) {
+            if t > 0 { js = js + "," }
+            js = js + "{\"name\":\"" + t_names[t] + "\",\"baseline\":\"" + t_b_grade[t] + "\",\"counterfactual\":\"" + t_c_grade[t] + "\"}"
+            t = t + 1
+        }
+        js = js + "]}"
+        println(js)
+        println("__FUSION_WHATIF__ PASS")
+        return
+    }
+
+    println("=" + "=".repeat(74))
+    println("  hexa-fusion whatif — n=6 lattice override + 27-ledger re-run")
+    println("=" + "=".repeat(74))
+    println("  override:")
+    if len(ks) == 0 {
+        println("    (none — running with canonical n=6 lattice)")
+    } else {
+        let mut o2 = 0
+        while o2 < len(ks) {
+            println("    " + pad_r(ks[o2], 22) + " = " + fmt_f(vs[o2], 6))
+            o2 = o2 + 1
+        }
+    }
+    println("")
+    println("  effective lattice:")
+    println("    σ=" + fmt_f(SIGMA, 3) + "  τ=" + fmt_f(TAU, 3) + "  φ=" + fmt_f(PHI, 3) +
+            "  sopfr=" + fmt_f(SOPFR, 3) + "  J₂=" + fmt_f(J2, 3) +
+            "  μ=" + fmt_f(MU, 3) + "  n=" + fmt_f(N6, 3))
+    let identity_ok = (SIGMA * PHI == J2) && (N6 * TAU == J2)
+    let id_str = if identity_ok { "PRESERVED" } else { "BROKEN" }
+    println("    master identity σ·φ=n·τ=J₂ : " + id_str + "  (σ·φ=" +
+            fmt_f(SIGMA * PHI, 3) + ", n·τ=" + fmt_f(N6 * TAU, 3) + ", J₂=" + fmt_f(J2, 3) + ")")
+    if LCAL != 1.0 {
+        println("    lawson calibration factor : " + fmt_f(LCAL, 3) + " (×closed-form)")
+    }
+    println("")
+
+    println("  baseline       : " + to_string(b_match) + "/" + to_string(b_match + b_breach) +
+            " match  (" + to_string(b_breach) + " breach)")
+    println("  counterfactual : " + to_string(c_match) + "/" + to_string(c_match + c_breach) +
+            " match  (" + to_string(c_breach) + " breach)")
+
+    let delta = c_match - b_match
+    let delta_str = if delta >= 0 { "+" + to_string(delta) } else { to_string(delta) }
+    println("  Δ match        : " + delta_str)
+    println("")
+
+    println("  transitions (rows whose grade flipped):")
+    if len(t_names) == 0 {
+        println("    (none — override is grade-equivalent to baseline)")
+    } else {
+        let mut t2 = 0
+        while t2 < len(t_names) {
+            let arrow = t_b_grade[t2] + " → " + t_c_grade[t2]
+            println("    " + pad_r(t_names[t2], 30) + "  " + arrow)
+            t2 = t2 + 1
+        }
+    }
+
+    let counter_factual = has_flag(user_args, "--counter-factual") || has_flag(user_args, "-cf")
+    let baseline_match = (delta == 0)
+
+    println("")
+    if baseline_match {
+        println("__FUSION_WHATIF__ PASS  (override is grade-equivalent to baseline)")
+    } else if counter_factual {
+        println("__FUSION_WHATIF__ PASS  (counter-factual exploration; Δ announced as " + delta_str + ")")
+    } else {
+        println("__FUSION_WHATIF__ FAIL  (override changed match count by " + delta_str +
+                "; pass --counter-factual to acknowledge)")
+        exit(1)
+    }
+}
+
+// ─── main ───────────────────────────────────────────────────────
+
+fn main() {
+    let raw = args()
+    let mut user: [str] = []
+    let mut started = false
+    let mut i = 0
+    while i < len(raw) {
+        if started { user = user + [raw[i]] }
+        if raw[i].ends_with(".hexa") { started = true }
+        i = i + 1
+    }
+
+    if has_flag(user, "--help") || has_flag(user, "-h") {
+        println("usage: hexa run cli/fusion_whatif.hexa [--set k=v]... [--counter-factual] [--json]")
+        println("  --set k=v          override one of: sigma, tau, phi, sopfr, j2, mu, n, lawson_calibration")
+        println("  --counter-factual  acknowledge that Δ ≠ 0 is intended (else exits non-0)")
+        println("  --json             machine-parseable output")
+        return
+    }
+
+    let json_mode = has_flag(user, "--json")
+    run(user, json_mode)
+}

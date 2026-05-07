@@ -25,15 +25,31 @@ fn run_quick_selftest(root: str) -> bool {
         eprintln("[hexa-fusion/install] WARN: cli/hexa-fusion.hexa missing — skip selftest")
         return false
     }
-    println("[hexa-fusion/install] [post] running quick selftest (4-pillar verb sweep)")
+    println("[hexa-fusion/install] [post] running quick selftest (sub-command verb sweep)")
     let cmd = "HEXA_FUSION_ROOT=\"" + root + "\" hexa run \"" + cli + "\" selftest 2>&1"
     let raw = exec(cmd)
     if raw.contains("__HEXA_FUSION_SELFTEST__ PASS") {
-        println("[hexa-fusion/install]   selftest PASS — 4/4 sub-command sentinels present")
+        println("[hexa-fusion/install]   selftest PASS — core + derivative sentinels present")
         return true
     }
     eprintln("[hexa-fusion/install] WARN: selftest non-PASS (warn-only, not a blocker)")
     eprintln("  hint: missing module file or sentinel mismatch — see README §Verification")
+    return false
+}
+
+fn run_derivative_smoke(root: str) -> bool {
+    // Optional: exercise derivative modules end-to-end. WARN-only on failure
+    // since v1.0.0 contract is core (4 modules); derivative is additive.
+    let test = root + "/tests/test_derivative.hexa"
+    let exists = exec("[ -f \"" + test + "\" ] && echo y || echo n").trim()
+    if exists != "y" { return true }                    // not present → skip
+    let cmd = "HEXA_FUSION_ROOT=\"" + root + "\" hexa run \"" + test + "\" 2>&1 | tail -3"
+    let raw = exec(cmd)
+    if raw.contains("__HEXA_FUSION_TEST_DERIVATIVE__ PASS") {
+        println("[hexa-fusion/install]   derivative smoke PASS")
+        return true
+    }
+    eprintln("[hexa-fusion/install] WARN: derivative smoke non-PASS (warn-only)")
     return false
 }
 
@@ -58,7 +74,8 @@ fn main() -> void {
     }
 
     if p == "post" || p == "both" {
-        let _ = run_quick_selftest(root)  // warn-only
+        let _ = run_quick_selftest(root)        // warn-only
+        let _ = run_derivative_smoke(root)      // warn-only
     }
 
     println("[hexa-fusion/install] done — hx will generate " + env("HX_BIN_DIR") + "/hexa-fusion shim")

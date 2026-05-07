@@ -1,0 +1,11 @@
+# runtime artifacts (audit log, markers) — never committed
+state/
+*.log
+
+# build outputs
+build/*.pdf
+
+# editor backup
+*.bak
+*~
+.DS_Store
