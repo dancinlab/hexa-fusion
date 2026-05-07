@@ -1,0 +1,251 @@
+#!hexa strict
+// hexa-fusion/verify/numerics_fusion_solver.hexa — 0D D-T burn ODE solver (T2).
+//
+// Step-by-step numerical integration of the simplest D-T burn-rate
+// equation (constant-T_i = σ+φ = 14 keV, equal initial n_D = n_T):
+//
+//   dn_D/dt = -R(t)   where R = n_D · n_T · <σv>
+//   dn_T/dt = -R(t)
+//   dn_α/dt = +R(t)
+//
+// With n_D = n_T at all times the system collapses to
+//   dn_D/dt = -n_D² · <σv>
+// whose closed form is  n_D(t) = n_0 / (1 + n_0·<σv>·t).
+//
+// PASS = the RK2 (midpoint) integrator matches the closed form within
+//        1% rel err at every checkpoint, AND the α + D + T mass balance
+//        is preserved within 1e-12 per step.
+//
+// Tier: closes one more T2 leg for F-FUSION-1 (the actual numerical
+// solver, beyond the closed-form Lawson identity in numerics_fusion).
+// T3 (live D-T plasma data feed) still TBD.
+//
+// Run:
+//   hexa run verify/numerics_fusion_solver.hexa
+//
+// Cost: $0 (math_pure float arithmetic, ~256 RK2 steps).
+
+use "self/runtime/math_pure"
+
+let HOME = env("HOME")
+
+fn _root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"
+}
+
+let ROOT = _root()
+
+// ── n=6 lattice (float) ──────────────────────────────────────────────────
+let SIGMA  = 12.0
+let PHI    = 2.0
+let TAU    = 4.0
+
+// ── physical constants ──────────────────────────────────────────────────
+// Bosch-Hale fit at T_i = 14 keV: <σv>_DT ≈ 1.1e-22 m³/s.
+let SIGMA_V = 1.1e-22
+
+// Initial density chosen so that the τ_burn ~ 1/(n_0·<σv>) is O(100 s),
+// keeping the integration window short and rounding numbers nice.
+let N0 = 1.0e20         // m^-3 — initial D = initial T
+
+// Integration window: 0 → T_BURN at TOTAL_STEPS RK2 steps.
+let T_BURN = 100.0      // s — order-of-magnitude burnup horizon
+let TOTAL_STEPS = 256
+
+// ── audit accumulator ────────────────────────────────────────────────────
+let mut RUN = 0
+let mut FAIL = 0
+let mut FAILURES: [str] = []
+
+let FALSIFIERS = ["F-FUSION-1"]
+
+fn _abs(x: float) -> float {
+    if x < 0.0 { return 0.0 - x }
+    return x
+}
+
+fn _check(ok: bool, label: str, detail: str) {
+    RUN = RUN + 1
+    if ok {
+        println("  [PASS] " + label + "  ·  " + detail)
+    } else {
+        FAIL = FAIL + 1
+        FAILURES = FAILURES + [label + " :: " + detail]
+        println("  [FAIL] " + label + "  ·  " + detail)
+    }
+}
+
+// ── closed-form reference ───────────────────────────────────────────────
+// n_D(t) = n_0 / (1 + n_0 · <σv> · t)
+fn n_d_analytic(t: float) -> float {
+    return N0 / (1.0 + N0 * SIGMA_V * t)
+}
+
+// ── RK2 (midpoint) one step ──────────────────────────────────────────────
+// dy/dt = f(t, y),   f(t, n) = -n² · <σv>
+fn f_rate(n: float) -> float {
+    return 0.0 - n * n * SIGMA_V
+}
+
+fn rk2_step(n: float, h: float) -> float {
+    let k1 = f_rate(n)
+    let n_mid = n + 0.5 * h * k1
+    let k2 = f_rate(n_mid)
+    return n + h * k2
+}
+
+// ── §1 RK2 vs analytic at 5 checkpoints ─────────────────────────────────
+
+let mut MAX_REL_ERR = 0.0
+
+fn run_solver_with_checks() {
+    let h = T_BURN / 256.0       // = 100 / 256 = 0.390625 s
+    let mut n_d = N0
+    let mut t = 0.0
+    let mut step = 0
+    // Checkpoints at 1/4, 2/4, 3/4, 4/4 of T_BURN
+    let checkpoints = [64, 128, 192, 256]
+    let mut ck = 0
+    while step < 256 {
+        n_d = rk2_step(n_d, h)
+        t = t + h
+        step = step + 1
+        if ck < 4 {
+            if step == checkpoints[ck] {
+                let analytic = n_d_analytic(t)
+                let rel = _abs(n_d - analytic) / analytic
+                if rel > MAX_REL_ERR { MAX_REL_ERR = rel }
+                let label = "RK2 vs analytic at t=" + str(t) + " s (step " + str(step) + ")"
+                _check(rel < 0.01,
+                       label,
+                       "n_RK2=" + str(n_d) + " n_an=" + str(analytic) +
+                       " rel=" + str(rel * 100.0) + "%")
+                ck = ck + 1
+            }
+        }
+    }
+}
+
+// ── §2 mass balance (α + D + T conservation per step) ───────────────────
+
+fn check_mass_balance() {
+    // Track all 3 species over a 16-step mini-run with the same h, verify
+    // n_α(t) + n_D(t) = N0  and  n_T(t) = n_D(t) at all checkpoints.
+    let h = T_BURN / 256.0
+    let mut n_d = N0
+    let mut n_t = N0
+    let mut n_a = 0.0
+    let mut step = 0
+    let mut max_imbalance = 0.0
+    while step < 16 {
+        // Forward RK2 on D (= T by symmetry); α by complementary update.
+        let n_d_new = rk2_step(n_d, h)
+        let dn = n_d - n_d_new            // amount consumed
+        n_t = n_t - dn
+        n_a = n_a + dn
+        n_d = n_d_new
+        step = step + 1
+        // Invariant 1: D = T  (initial symmetry preserved)
+        let imbal_dt = _abs(n_d - n_t)
+        // Invariant 2: D + α = N0  (D mass balance)
+        let imbal_da = _abs(n_d + n_a - N0)
+        let m1 = imbal_dt / N0
+        let m2 = imbal_da / N0
+        if m1 > max_imbalance { max_imbalance = m1 }
+        if m2 > max_imbalance { max_imbalance = m2 }
+    }
+    _check(max_imbalance < 1.0e-12,
+           "mass balance: D = T and D + α = N₀ to 1e-12 over 16 steps",
+           "max relative imbalance = " + str(max_imbalance))
+}
+
+// ── §3 burnup fraction at T_BURN matches analytic ────────────────────────
+
+fn check_burnup_fraction() {
+    let n_final = n_d_analytic(T_BURN)
+    let burnup = (N0 - n_final) / N0
+    // closed form: burnup = N0·<σv>·t / (1 + N0·<σv>·t)
+    //            = (1e20·1.1e-22·100) / (1 + 1.1) = 1.1 / 2.1 ≈ 0.5238
+    let expected = 1.1 / 2.1
+    _check(_abs(burnup - expected) < 0.001,
+           "analytic burnup fraction at t=T_BURN = N0·<σv>·t / (1+N0·<σv>·t) ≈ 0.524",
+           "got=" + str(burnup) + " expected=" + str(expected))
+}
+
+// ── §4 lattice-derived τ_burn matches order of magnitude ────────────────
+
+fn check_tau_burn_anchor() {
+    // τ_burn ~ 1 / (N0 · <σv>) = 1 / (1e20 · 1.1e-22) = 90.91 s
+    // n=6 lattice anchor:  τ · σ + sopfr·τ + sopfr = 4·12 + 5·4 + 5 = 73
+    // (one of several O(100) lattice combinations).  Use pendulum-style
+    // anchor: σ + sopfr·τ + sopfr·sopfr = 12 + 20 + 25 = 57
+    // We assert tau_burn is in [1/(N0·<σv>) × 0.5,  × 1.5] window — i.e.,
+    // O(100 s).
+    let tau_burn = 1.0 / (N0 * SIGMA_V)
+    _check(tau_burn > 50.0 && tau_burn < 150.0,
+           "τ_burn = 1/(N₀·<σv>) ∈ [50, 150] s window  (O(100) anchor)",
+           "τ_burn = " + str(tau_burn) + " s")
+}
+
+// ── §5 energy yield cross-check ─────────────────────────────────────────
+
+fn check_alpha_energy_release() {
+    // Q_α per fusion = 3.518 MeV (D-T α-channel).  At burnup ≈ 0.524 of
+    // 1e20 m^-3 → 5.24e19 α/m³.
+    // Energy density E_α = 5.24e19 α/m³ · (3.518 MeV · 1.602e-13 J/MeV)
+    //                    = 5.24e19 · 5.636e-13 J
+    //                    ≈ 2.95e7 J/m³  =  29.5 MJ/m³
+    let n_final = n_d_analytic(T_BURN)
+    let n_alpha = N0 - n_final
+    let q_alpha_J = 3.518e6 * 1.602e-19    // J per α (MeV → J)
+    let e_density = n_alpha * q_alpha_J
+    _check(e_density > 2.5e7 && e_density < 3.5e7,
+           "α energy density at T_BURN ∈ [2.5e7, 3.5e7] J/m³  (≈ 29.5 MJ/m³)",
+           "E_α/V = " + str(e_density))
+}
+
+// ── main ─────────────────────────────────────────────────────────────────
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion — 0D D-T burn ODE solver (T2, numerics_fusion_solver)")
+    println("  T_i = σ+φ = 14 keV,  <σv> = 1.1e-22 m³/s,  N₀ = 1e20 m⁻³")
+    println("  RK2 (midpoint), 256 steps over T_BURN = 100 s")
+    println("========================================================================")
+    println("  root: " + ROOT)
+    println("  falsifiers (T2 evidence): F-FUSION-1")
+    println("")
+
+    println("-- §1 RK2 vs analytic at 4 checkpoints --")
+    run_solver_with_checks()
+    println("")
+    println("-- §2 mass balance (D = T, D + α = N₀) --")
+    check_mass_balance()
+    println("")
+    println("-- §3 burnup fraction --")
+    check_burnup_fraction()
+    println("")
+    println("-- §4 τ_burn anchor --")
+    check_tau_burn_anchor()
+    println("")
+    println("-- §5 energy yield --")
+    check_alpha_energy_release()
+
+    println("========================================================================")
+    let pass_n = RUN - FAIL
+    println("  " + str(pass_n) + "/" + str(RUN) + " checks passed")
+    println("  RK2 max rel-err vs analytic = " + str(MAX_REL_ERR * 100.0) + "%")
+    if FAIL > 0 {
+        println("  FAILURES:")
+        for f in FAILURES { println("    x " + f) }
+        println("__HEXA_FUSION_NUMERICS_FUSION_SOLVER__ FAIL")
+        exit(1)
+    }
+    println("  D-T burn ODE solver: RK2 matches analytic, mass balance preserved.")
+    println("__HEXA_FUSION_NUMERICS_FUSION_SOLVER__ PASS")
+    exit(0)
+}

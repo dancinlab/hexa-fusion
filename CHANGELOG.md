@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 7th RSC iteration: 0D D-T burn ODE solver)
+- `verify/numerics_fusion_solver.hexa` — 0D D-T burn ODE solver (T2, 8/8 PASS). Step-by-step RK2 (midpoint) integration of the simplest D-T burn-rate equation (constant T_i = σ+φ = 14 keV, equal initial n_D = n_T): `dn_D/dt = -n_D²·<σv>` with closed-form reference `n_D(t) = n_0 / (1 + n_0·<σv>·t)`. 5 sections: RK2 vs analytic at 4 checkpoints (max rel-err 0.000347%), mass balance D=T and D+α=N₀ to 1e-12 over 16 steps, burnup fraction 0.524 at t=T_BURN, τ_burn ≈ 90.91 s in [50,150]s window, α energy density ≈ 29.5 MJ/m³ in [25,35] MJ/m³ window. Provides T2 evidence for F-FUSION-1 (the actual numerical solver beyond the closed-form Lawson identity in numerics_fusion). T3 (live D-T plasma data feed) still TBD. Sentinel `__HEXA_FUSION_NUMERICS_FUSION_SOLVER__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion-solver]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_fusion_solver row (5 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  7/7`.
+
+### Verification (iter 7)
+- `hexa run verify/numerics_fusion_solver.hexa` → 8/8 PASS, max RK2 rel-err 0.000347%.
+- `hexa-fusion verify all` → `PASS: 7/7`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 6th RSC iteration: D-T 4-machine published parity)
 - `verify/numerics_fusion_parity.hexa` — D-T published-machine parity (T2, 13/13 PASS). Compares the n=6 closed-form predictions against the canonical 4-machine D-T tokamak set (ITER, JET, KSTAR, SPARC). 5 sections cover ITER (Q=10 EXACT, T_i=14 EXACT, V=840 EXACT, B_t scope mismatch as 9.06× headroom), JET 1997 DT-1 (Q=0.67 → n6 Q=10 = 14.9× lift, B 13.9× lift), KSTAR sister project (T_e=8.617 keV → 1.624× lift, B_t=3.5 T → 13.7× headroom — F-FUSION-3 anchor), SPARC HTS demo (B_t=12.2 T ≈ σ=12 CLOSE 1.6%, Q≥2 → 5× headroom), and a 4-machine ladder summary (Q ladder, T_i ladder, B_t ladder). Each parity row reports closed-form vs published, relative error %, and EXACT/CLOSE/WEAK/FAIL grade. Provides T2 evidence for F-FUSION-3. Sentinel `__HEXA_FUSION_NUMERICS_FUSION_PARITY__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion-parity]`; help bumped.

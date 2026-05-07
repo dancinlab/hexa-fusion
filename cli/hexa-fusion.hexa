@@ -229,6 +229,7 @@ let VERIFY_SUBS = [
     "tabletop",
     "numerics-fusion",
     "numerics-fusion-parity",
+    "numerics-fusion-solver",
 ]
 
 fn _verify_script(sub: str) -> str {
@@ -238,6 +239,7 @@ fn _verify_script(sub: str) -> str {
     if sub == "tabletop"                 { return VERIFY_DIR + "/calc_tabletop.hexa" }
     if sub == "numerics-fusion"          { return VERIFY_DIR + "/numerics_fusion.hexa" }
     if sub == "numerics-fusion-parity"   { return VERIFY_DIR + "/numerics_fusion_parity.hexa" }
+    if sub == "numerics-fusion-solver"   { return VERIFY_DIR + "/numerics_fusion_solver.hexa" }
     return ""
 }
 
@@ -275,6 +277,7 @@ fn _verify_help() {
     println("  tabletop        tabletop p-11B aneutronic n=6 derivation (V + T_opt + Q=τ + power + cost)")
     println("  numerics-fusion D-T closed-form numerics (T2: math_pure float ↔ int parity, Lawson, Q, Carnot)")
     println("  numerics-fusion-parity  D-T published-machine parity (T2: ITER / JET / KSTAR / SPARC)")
+    println("  numerics-fusion-solver  0D D-T burn ODE solver (T2: RK2 vs analytic, mass balance)")
     println("")
     println("exit:")
     println("  0  selected verifier(s) PASS")
@@ -513,6 +516,7 @@ fn cmd_subhelp(sub: str) {
         println("  tabletop        → tabletop p-11B aneutronic n=6 derivation (V + T_opt + Q=τ + power + cost)")
         println("  numerics-fusion → D-T closed-form numerics (T2: math_pure float ↔ int parity, Lawson, Q, Carnot)")
         println("  numerics-fusion-parity → D-T published-machine parity (T2: ITER / JET / KSTAR / SPARC)")
+        println("  numerics-fusion-solver → 0D D-T burn ODE solver (T2: RK2 vs analytic, mass balance)")
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")
