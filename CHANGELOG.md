@@ -5,6 +5,17 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-07 — 11th RSC iteration: KSTAR-N6 Q-gain DSE, F-FUSION-3 second T2 leg)
+- `verify/numerics_powerplant_dse.hexa` — KSTAR-N6 Q-gain design-space exploration (T2, 10/10 PASS). Builds a small Q-surface from `Q = (σ-φ) · (B/B_anchor)² · (T/T_anchor)`. 7 sections: anchor reproduction (Q=10 at B=48, T=14), halve-B → Q/4 (quadratic), halve-T → Q/2 (linear), 3×3 grid monotonicity in B and T, break-even windows (anchor metric=1.0 sits 2.5× above τ/Q_anchor=0.4 threshold; halving B drops Q to 2.5 < τ=4 because B-quadratic bites first; full anchor stays 2.5× over τ), surface monotonicity (no interior max), dimensional sanity (Q dimensionless = 10 at anchor). Provides second T2 leg for F-FUSION-3 (after numerics_powerplant). Sentinel `__HEXA_FUSION_NUMERICS_POWERPLANT_DSE__ PASS`.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-powerplant-dse]`; help bumped.
+- `tests/test_calculators.hexa` — added numerics_powerplant_dse row (9 cases now).
+- `tests/test_cli_verify.hexa` — expected aggregate bumped to `PASS:  11/11`.
+
+### Verification (iter 11)
+- `hexa run verify/numerics_powerplant_dse.hexa` → 10/10 PASS.
+- `hexa-fusion verify all` → `PASS: 11/11`, exit 0.
+- `hexa run tests/test_all.hexa` → 5/5 PASS.
+
 ### Added (2026-05-07 — 10th RSC iteration: KSTAR-N6 powerplant numerics, F-FUSION-3 T2)
 - `verify/numerics_powerplant.hexa` — KSTAR-N6 powerplant end-to-end numerics (T2, 16/16 PASS). 6 sections cover base anchors (B=σ·τ=48, T_i=σ+φ=14, Q=σ-φ=10, η=σ/J₂=0.5, TF=3n=18), full power balance for a 50 MW input scenario (P_th=Q·P_in=500 MW, P_e=η·P_th=250 MW, P_net=200 MW, η_overall=0.4), magnet-energy + coil scaling (B²=σ²·τ²=2304, 9.06× lift over ITER), Carnot bound (η_Brayton=0.5 ≤ η_Carnot=1-n/(σ+φ)≈0.571), plant-wide invariants (12-archetype lock + master closure preserved), and KSTAR-N6 lift over current KSTAR (Q 10× lift, B 13.7× lift). Provides T2 evidence for F-FUSION-3 (the end-to-end power-balance closure beyond the algebraic Q=σ-φ identity in calc_fusion). Sentinel `__HEXA_FUSION_NUMERICS_POWERPLANT__ PASS`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-powerplant]`; help bumped.

@@ -233,6 +233,7 @@ let VERIFY_SUBS = [
     "numerics-tabletop",
     "numerics-tabletop-parity",
     "numerics-powerplant",
+    "numerics-powerplant-dse",
 ]
 
 fn _verify_script(sub: str) -> str {
@@ -246,6 +247,7 @@ fn _verify_script(sub: str) -> str {
     if sub == "numerics-tabletop"        { return VERIFY_DIR + "/numerics_tabletop.hexa" }
     if sub == "numerics-tabletop-parity" { return VERIFY_DIR + "/numerics_tabletop_parity.hexa" }
     if sub == "numerics-powerplant"      { return VERIFY_DIR + "/numerics_powerplant.hexa" }
+    if sub == "numerics-powerplant-dse"  { return VERIFY_DIR + "/numerics_powerplant_dse.hexa" }
     return ""
 }
 
@@ -287,6 +289,7 @@ fn _verify_help() {
     println("  numerics-tabletop       tabletop p-11B numerics (T2: B^4 scaling + Gamow peak + power density)")
     println("  numerics-tabletop-parity p-11B 4-effort published parity (T2: HB11 / TAE / LPP / ENN)")
     println("  numerics-powerplant     KSTAR-N6 powerplant numerics (T2: P_input → P_th → P_e + Carnot bound)")
+    println("  numerics-powerplant-dse Q-gain DSE (T2: B-quadratic + T-linear scaling, monotonicity, break-even windows)")
     println("")
     println("exit:")
     println("  0  selected verifier(s) PASS")
@@ -529,6 +532,7 @@ fn cmd_subhelp(sub: str) {
         println("  numerics-tabletop      → tabletop p-11B numerics (T2: B^4 scaling + Gamow peak + power density)")
         println("  numerics-tabletop-parity → p-11B 4-effort published parity (T2: HB11 / TAE / LPP / ENN)")
         println("  numerics-powerplant    → KSTAR-N6 powerplant numerics (T2: P_input → P_th → P_e + Carnot bound)")
+        println("  numerics-powerplant-dse → Q-gain DSE (T2: B-quadratic + T-linear scaling, monotonicity, break-even windows)")
         println("  cost: $0 (~2s on Mac)")
     } else if sub == "selftest" {
         println("hexa-fusion selftest [--json]")
