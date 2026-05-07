@@ -233,6 +233,7 @@ let VERIFY_SUBS = [
     "numerics-fusion-burnup",
     "numerics-tabletop",
     "numerics-tabletop-parity",
+    "numerics-tabletop-solver",
     "numerics-powerplant",
     "numerics-powerplant-dse",
     "numerics-cross",
@@ -252,6 +253,7 @@ fn _verify_script(sub: str) -> str {
     if sub == "numerics-fusion-burnup"   { return VERIFY_DIR + "/numerics_fusion_burnup.hexa" }
     if sub == "numerics-tabletop"        { return VERIFY_DIR + "/numerics_tabletop.hexa" }
     if sub == "numerics-tabletop-parity" { return VERIFY_DIR + "/numerics_tabletop_parity.hexa" }
+    if sub == "numerics-tabletop-solver" { return VERIFY_DIR + "/numerics_tabletop_solver.hexa" }
     if sub == "numerics-powerplant"      { return VERIFY_DIR + "/numerics_powerplant.hexa" }
     if sub == "numerics-powerplant-dse"  { return VERIFY_DIR + "/numerics_powerplant_dse.hexa" }
     if sub == "numerics-cross"           { return VERIFY_DIR + "/numerics_cross_pillar.hexa" }
@@ -299,6 +301,7 @@ fn _verify_help() {
     println("  numerics-fusion-burnup  D-T burnup integral (T2: Simpson + trapezoid + analytic, 4th-order convergence)")
     println("  numerics-tabletop       tabletop p-11B numerics (T2: B^4 scaling + Gamow peak + power density)")
     println("  numerics-tabletop-parity p-11B 4-effort published parity (T2: HB11 / TAE / LPP / ENN)")
+    println("  numerics-tabletop-solver p-11B 0D burn ODE solver (T2: RK4 vs analytic, 3α conservation)")
     println("  numerics-powerplant     KSTAR-N6 powerplant numerics (T2: P_input → P_th → P_e + Carnot bound)")
     println("  numerics-powerplant-dse Q-gain DSE (T2: B-quadratic + T-linear scaling, monotonicity, break-even windows)")
     println("  numerics-cross          cross-pillar numerical anchor (T2: every n=6 float identical across 4 pillars)")
@@ -547,6 +550,7 @@ fn cmd_subhelp(sub: str) {
         println("  numerics-fusion-burnup → D-T burnup integral (T2: Simpson + trapezoid + analytic, 4th-order convergence)")
         println("  numerics-tabletop      → tabletop p-11B numerics (T2: B^4 scaling + Gamow peak + power density)")
         println("  numerics-tabletop-parity → p-11B 4-effort published parity (T2: HB11 / TAE / LPP / ENN)")
+        println("  numerics-tabletop-solver → p-11B 0D burn ODE solver (T2: RK4 vs analytic, 3α conservation)")
         println("  numerics-powerplant    → KSTAR-N6 powerplant numerics (T2: P_input → P_th → P_e + Carnot bound)")
         println("  numerics-powerplant-dse → Q-gain DSE (T2: B-quadratic + T-linear scaling, monotonicity, break-even windows)")
         println("  numerics-cross          → cross-pillar numerical anchor (T2: every n=6 float identical across 4 pillars)")

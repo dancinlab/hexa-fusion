@@ -28,6 +28,7 @@ let CASES = [
     "numerics_fusion_burnup.hexa|__HEXA_FUSION_NUMERICS_FUSION_BURNUP__ PASS",
     "numerics_tabletop.hexa|__HEXA_FUSION_NUMERICS_TABLETOP__ PASS",
     "numerics_tabletop_parity.hexa|__HEXA_FUSION_NUMERICS_TABLETOP_PARITY__ PASS",
+    "numerics_tabletop_solver.hexa|__HEXA_FUSION_NUMERICS_TABLETOP_SOLVER__ PASS",
     "numerics_powerplant.hexa|__HEXA_FUSION_NUMERICS_POWERPLANT__ PASS",
     "numerics_powerplant_dse.hexa|__HEXA_FUSION_NUMERICS_POWERPLANT_DSE__ PASS",
     "numerics_cross_pillar.hexa|__HEXA_FUSION_NUMERICS_CROSS_PILLAR__ PASS",

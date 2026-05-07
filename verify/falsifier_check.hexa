@@ -77,7 +77,7 @@ let F1_T3_DESC       = "live ITER / SPARC / KSTAR DT plasma feed within 1 decade
 let F2_ID            = "F-FUSION-2"
 let F2_RETRACT       = "tabletop p-11B Q=τ=4 break-even closed-form retracted"
 let F2_T1_SCRIPTS    = ["calc_tabletop.hexa"]
-let F2_T2_SCRIPTS    = ["numerics_tabletop.hexa", "numerics_tabletop_parity.hexa"]
+let F2_T2_SCRIPTS    = ["numerics_tabletop.hexa", "numerics_tabletop_parity.hexa", "numerics_tabletop_solver.hexa"]
 let F2_T3_SCRIPTS: [str] = []
 let F2_T3_DESC       = "real tabletop p-11B 1 m³ Q=4 demonstration (HB11/TAE/LPP/ENN)"
 

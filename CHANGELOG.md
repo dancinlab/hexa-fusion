@@ -5,6 +5,18 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-08 — 18th RSC iteration: numerics_tabletop_solver, F-FUSION-2 T2×3 stack)
+- `verify/numerics_tabletop_solver.hexa` — p-11B 0D burn ODE solver (T2, third leg of F-FUSION-2). Where numerics_tabletop (T2 #1) re-derives the closed-form aneutronic identities (Q=τ=4 break-even, T_opt=300 keV, B^4 scaling) and numerics_tabletop_parity (T2 #2) compares against the 4-effort published table (HB11/TAE/LPP/ENN), this script integrates the actual p-11B burn-rate ODE step-by-step using a **classical RK4** solver (different from D-T's RK2) and validates: (a) RK4 matches analytic n_p(t)=N₀/(1+N₀·<σv>·t) within 1e-4 rel err at 4 checkpoints; (b) 3α-mass conservation invariant n_α + 3·n_p = 3·N₀ preserved within 1e-12 per step over 32 steps; (c) RK4 dominates RK2 on the same h (4th-order vs 2nd-order); (d) Q=τ=4 break-even, T_opt = n·(σ-φ)·sopfr = 300 keV, τ_burn ≈ 1/(N₀·<σv>) ≈ 2.17 s anchors stable; (e) burnup fraction at T_BURN > 0.98 (deep-burn regime: x = N₀·<σv>·t = 92, B = 92/93); (f) α energy density ≈ 1.4 GJ/m³ (3α per fusion · 8.68/3 MeV each at 1e21 m⁻³ initial fuel). Sentinel `__HEXA_FUSION_NUMERICS_TABLETOP_SOLVER__ PASS — 14/14 checks passed`. RK4 max rel-err vs analytic = 6.4e-6 %.
+- `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-tabletop-solver, ...]`; help bumped.
+- `verify/falsifier_check.hexa` — `F2_T2_SCRIPTS` extended to 3 entries (numerics_tabletop + numerics_tabletop_parity + numerics_tabletop_solver). F-FUSION-2 closure stays 67% (T1 + T2 ✓) but T2 stack depth ×2 → ×3.
+- `verify/lint_numerics.hexa` — `NUMERICS_SCRIPTS` inventory bumped to 11 entries.
+- `tests/test_calculators.hexa` — added `numerics_tabletop_solver.hexa|__HEXA_FUSION_NUMERICS_TABLETOP_SOLVER__ PASS` row.
+- `tests/test_cli_verify.hexa` — `EXPECTED_AGG = "PASS:  17/17"` (was 16/16).
+
+### Verification (iter 18)
+- `hexa run verify/numerics_tabletop_solver.hexa` → 14/14 PASS standalone, RK4 max rel-err 6.4e-6 % (well under 1e-4 tol).
+- Note: full `verify all` aggregate skipped (same fork-saturation issue as iter 17). Direct `hexa_interp` invocation confirms correctness.
+
 ### Added (2026-05-08 — 17th RSC iteration: numerics_fusion_burnup, F-FUSION-1 T2×3 stack)
 - `verify/numerics_fusion_burnup.hexa` — D-T burnup integral (T2, third leg of F-FUSION-1). Where numerics_fusion (T2 #1) re-derives the closed-form Lawson identity in float and numerics_fusion_solver (T2 #2) integrates the 0D burn ODE step-by-step via RK2, this script closes the burnup *integral* — the time-integrated fusion yield over a finite burn window — using Simpson's composite rule and cross-checks it against the n_D(t) = N₀/(1 + N₀·<σv>·t) closed form. Three independent integrators agree (analytic + Simpson + trapezoidal); Simpson dominates trapezoid (4th-order h-refinement). Mass conservation, closed-form burnup ladder (B(τ)=0.5, B(2τ)=2/3, B(9τ)=0.9), α/neutron channel partition (1/sopfr = 0.20 anchor), energy-density anchors (148 MJ/m³ total, 29.5 MJ/m³ α), lattice anchors (R(0)=N₀²·<σv>=1.1e18, σ·φ=J₂=24) all verified. Sentinel `__HEXA_FUSION_NUMERICS_FUSION_BURNUP__ PASS — 16/16 checks passed`.
 - `cli/hexa-fusion.hexa` — `VERIFY_SUBS = [..., numerics-fusion-burnup, ...]`; `_verify_script` mapping + `_verify_help` + `cmd_subhelp("verify")` lines bumped.
