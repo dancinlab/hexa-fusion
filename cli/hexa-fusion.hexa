@@ -122,7 +122,7 @@ fn _print_caveats() {
     println("  3. verify_fusion 28-item comprehensive sweep covers Carnot/Lawson/Q.")
     println("  4. Pillars 2-4 (tabletop_fusion / fusion_powerplant / plasma_deep)")
     println("     ship as doc-only at v1.0.0; numerical impl deferred.")
-    println("  5. Peaceful-only scope per n6-architecture@c0f1f570 (no weapons).")
+    println("  5. Peaceful-only scope per canon@c0f1f570 (no weapons).")
 }
 
 // ─── subcommand: status ───
@@ -478,7 +478,7 @@ fn cmd_selftest(a: [str]) {
 
 fn cmd_version() {
     println("hexa-fusion " + VERSION)
-    println("standalone Fusion Toolkit (HEXA family — extracted from n6-architecture@c0f1f570)")
+    println("standalone Fusion Toolkit (HEXA family — extracted from canon@c0f1f570)")
     println("license: MIT")
     println("repo:    https://github.com/dancinlab/hexa-fusion")
 }

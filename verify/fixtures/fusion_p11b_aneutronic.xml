@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/fusion-p11b-aneutronic-fixture</id>
+  <title>arXiv Query: search_query=all:p-11B OR all:proton boron fusion OR all:aneutronic fusion&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-05-08T00:00:00Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:p-11B+OR+all:proton+boron+fusion+OR+all:aneutronic+fusion&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>3142</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2212.05552v2</id>
+    <title>p-11B Aneutronic Fusion: From Tabletop to Power Reactor</title>
+    <updated>2023-01-12T17:21:00Z</updated>
+    <summary>Proton-boron-11 fusion (p + 11B → 3 alpha + 8.7 MeV) is uniquely
+aneutronic and the "holy grail" of clean fusion. We review HB11 Energy
+laser-driven 1m^3 chamber proposals, TAE Technologies field-reversed
+configuration approach (Norman C-2W), and LPP Fusion's dense plasma
+focus path. Required ion temperature ~150 keV, lower bremsstrahlung
+window than commonly assumed when fast-ion population is non-thermal.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2022-12-11T08:12:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>H. Hora</name></author>
+    <author><name>S. Eliezer</name></author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2310.11198v1</id>
+    <title>Avalanche p-11B Reaction Rate Reanalysis: 2023 ENN/HB11 Update</title>
+    <updated>2023-10-17T12:00:00Z</updated>
+    <summary>Updated cross-section for p + 11B → 3 alpha based on 2023 ENN Group
+collider experiments and HB11 Energy laser-driven measurements. Avalanche
+mechanism (a + 11B → 12C + p secondary) raises effective rate at
+T_i = 100-200 keV by factor 1.5-2.5 vs Nevins-Swain 2000.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-10-17T12:00:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>D. Margarone</name></author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2502.09231v1</id>
+    <title>Tabletop p-11B 1 m^3 Q-Gain Feasibility — TAE Norman C-2W Constraints</title>
+    <updated>2025-02-13T16:45:00Z</updated>
+    <summary>FRC-confined p-11B at TAE Norman/C-2W: 1m^3 plasma volume, B = 1-3 T,
+T_i goal 150 keV. Closed-form 0D break-even Q = 4 maps to n=6 invariant
+lattice τ-projection. Demonstrator target Q = 4 break-even = F-FUSION-2
+falsifier closure condition (live raw-data, Stage-1+).</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-02-13T16:45:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>M. Binderbauer</name></author>
+  </entry>
+</feed>

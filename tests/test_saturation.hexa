@@ -1,0 +1,59 @@
+#!hexa strict
+// hexa-fusion/tests/test_saturation.hexa — RSC saturation regression test.
+//
+// Wraps verify/saturation_check.hexa and asserts: exit 0 + the canonical
+// STOP sentinel `__HEXA_FUSION_RSC_SATURATED__ STOP` (NOT PASS — the
+// saturation script ends in STOP per recipe §7.3, so test_calculators
+// pattern-match would miss it; this isolated test pins the contract).
+//
+// Asserts (4):
+//   1. exit code == 0
+//   2. canonical STOP sentinel present
+//   3. sat-1 line reports TRUE  (every falsifier row carries T1+T2+T3)
+//   4. sat-2 line reports TRUE  (numerics inventory ≥ 12 + lint clean)
+
+let HOME = env("HOME")
+
+fn _root() -> str {
+    let r = env("HEXA_FUSION_ROOT")
+    if r.len() > 0 { return r }
+    let pwd = exec("pwd").trim()
+    if pwd.len() > 0 { return pwd }
+    return HOME + "/core/hexa-fusion"
+}
+
+let ROOT = _root()
+let SCRIPT = ROOT + "/verify/saturation_check.hexa"
+let HEXA = HOME + "/.hx/bin/hexa"
+
+fn shq(s: str) -> str {
+    return "'" + s.replace("'", "'\\''") + "'"
+}
+
+fn main() {
+    println("[test_saturation] script: " + SCRIPT)
+    let cmd = "HEXA_FUSION_ROOT=" + shq(ROOT) + " " + shq(HEXA) + " run " + shq(SCRIPT)
+    let r = exec_with_status(cmd + " 2>&1")
+    let out = to_string(r[0])
+    let code = r[1]
+
+    let has_stop  = out.find("__HEXA_FUSION_RSC_SATURATED__ STOP") >= 0
+    let has_sat1  = out.find("sat-1 (all 4 falsifier rows complete)        = TRUE") >= 0
+    let has_sat2  = out.find("sat-2 (inventory ≥ 12 + lint clean)          = TRUE") >= 0
+    let exit_ok   = code == 0
+
+    let pass = exit_ok && has_stop && has_sat1 && has_sat2
+    if pass {
+        println("[test_saturation] PASS — exit 0 + STOP sentinel + sat-1/sat-2 TRUE")
+        println("__HEXA_FUSION_TEST_SATURATION__ PASS")
+        exit(0)
+    }
+    eprintln("[test_saturation] FAIL — exit=" + str(code) +
+             " stop=" + str(has_stop) +
+             " sat1=" + str(has_sat1) +
+             " sat2=" + str(has_sat2))
+    eprintln("--- stdout ---")
+    eprintln(out)
+    eprintln("__HEXA_FUSION_TEST_SATURATION__ FAIL")
+    exit(1)
+}

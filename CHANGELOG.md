@@ -302,7 +302,7 @@ This commit closes the 16-script standard inventory from `~/core/bedrock/docs/ru
 ## [1.0.0] - 2026-05-06
 
 ### Added
-- Initial standalone extraction from `n6-architecture@c0f1f570`.
+- Initial standalone extraction from `canon@c0f1f570`.
 - 4-pillar Fusion Toolkit (HEXA family) skeleton:
   - `fusion/` — D-T ignition Lawson closure (WIRED)
     - `fusion/doc/fusion.md` — full SSOT (671 lines, §1-§8 Mk.V Lawson closure)
@@ -331,6 +331,6 @@ This commit closes the 16-script standard inventory from `~/core/bedrock/docs/ru
 - `verify_fusion` 28-item comprehensive sweep
 
 ### Provenance
-- Extracted from `n6-architecture@c0f1f570` on 2026-05-06
+- Extracted from `canon@c0f1f570` on 2026-05-06
 - Sister-extraction of `hexa-bio` v1.0.0 (registry L24)
 - Peaceful-only scope per upstream architecture commit

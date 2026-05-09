@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/fusion-powerplant-rtsc-48t-fixture</id>
+  <title>arXiv Query: search_query=all:high-field tokamak OR all:SPARC fusion OR all:REBCO coil OR all:Q-gain powerplant&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-05-08T00:00:00Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:high-field+tokamak+OR+all:SPARC+fusion+OR+all:REBCO+coil+OR+all:Q-gain+powerplant&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>27894</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2211.10193v1</id>
+    <title>SPARC: A Compact, High-Field, Net Fusion-Energy Tokamak — REBCO HTS Path</title>
+    <updated>2022-11-18T11:42:00Z</updated>
+    <summary>Commonwealth Fusion Systems (CFS) and MIT PSFC report SPARC tokamak
+parameters: B_T0 = 12.2 T (REBCO HTS coils), R = 1.85 m, Q ≥ 2 baseline.
+HTS coil reaches 20 T peak field; 48 T regime reachable in stacked-pancake
+all-HTS designs (DEMO-class, ~2035 horizon). Power balance sets Q-gain
+σ-φ window for n=6 invariant.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2022-11-18T11:42:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>A. J. Creely</name></author>
+    <author><name>M. J. Greenwald</name></author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2403.04472v1</id>
+    <title>REBCO Coated-Conductor 48 T Magnet Roadmap for Fusion Powerplants</title>
+    <updated>2024-03-07T13:00:00Z</updated>
+    <summary>REBCO (Y/Gd-Ba-Cu-O) coated conductors at 4.2 K reach J_e ~ 1000 A/mm^2
+at 20 T background field. Stacked-pancake design extrapolation suggests
+40-50 T peak field accessible in next-generation fusion magnets. Hc2
+σ·τ = 48 T n=6 closed-form bound coincides with engineering ceiling.</summary>
+    <category term="physics.app-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-03-07T13:00:00Z</published>
+    <arxiv:primary_category term="physics.app-ph"/>
+    <author><name>D. C. Larbalestier</name></author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2501.18772v1</id>
+    <title>KSTAR Long-Pulse Operation 2024-2025: H-mode 100s and 30s Plasma Records</title>
+    <updated>2025-01-30T09:11:00Z</updated>
+    <summary>KSTAR (Korea Superconducting Tokamak Advanced Research) achieved
+100-second H-mode at T_i ≥ 100 million K (8.6 keV ion temperature) in
+2024 long-pulse campaigns. Path to KSTAR-N6 RT-SC powerplant Q = 10 =
+σ-φ requires 48 T HTS coil upgrade from current 3.5 T NbTi/Nb3Sn.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-01-30T09:11:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>S. W. Yoon</name></author>
+  </entry>
+</feed>

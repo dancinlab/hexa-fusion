@@ -4,7 +4,7 @@
 > deadlines, pointers. Sister substrate of `hexa-bio` / `hexa-rtsc` /
 > `hexa-ufo` / `petite-cern` under `dancinlab` org.
 
-**Last sync**: 2026-05-08 · **Current release**: v1.1.0 · **Branch**: `main`
+**Last sync**: 2026-05-09 · **Current release**: v1.2.0 · **Branch**: `main`
 
 ---
 
@@ -41,21 +41,27 @@ Master identity: **σ·φ = n·τ = J₂ = 24**. Q-gain = σ-φ = 10 (powerplant
 | Version | Date | Status | Highlights |
 |---------|------|--------|------------|
 | v1.0.0 | 2026-05-06 | RELEASED | 4-pillar 시드 (fusion + tabletop_fusion + fusion_powerplant + plasma_deep) + ledger 26/27 EXACT (1 honest negative) + verify 28-item + 3 CLI (calc/dse/verify) |
-| v1.1.0 | 2026-05-08 | **RELEASED** | RSC closure (recipe §7) — 21 iters, sat-1 reached: 18 verify scripts (4 T1 + 12 T2 + 2 META) + 2 T3 scaffolds (state/ITER_OPS_API + KSTAR_PLASMA_LOG) + 5 tests + build pipeline (4 pillar PDFs). All 4 falsifiers (F-FUSION-1/2/3/4) at T1+T2×3 = 67% closure, T3 path registered, Stage-1+ hardware-bound. |
-| v1.2.0 | ~2026-09 | planned | `tabletop_fusion` p-¹¹B aneutronic 1m³ live simulation wired (replaces RK4 stub with multi-species) |
-| v1.3.0 | ~2026-11 | planned | `plasma_deep` reduced-MHD 솔버 wired |
-| v2.0.0 | ~2026-12 | ASPIRATIONAL | 12-archetype closure 122/122 EXACT 자동 회귀 + lawson_triple gap resolved 또는 documented |
+| v1.1.0 | 2026-05-08 | RELEASED | RSC closure (recipe §7) — 21 iters, sat-1 reached: 18 verify scripts (4 T1 + 12 T2 + 2 META) + 2 T3 scaffolds (state/ITER_OPS_API + KSTAR_PLASMA_LOG) + 5 tests + build pipeline (4 pillar PDFs). All 4 falsifiers (F-FUSION-1/2/3/4) at T1+T2×3 = 67% closure, T3 path registered, Stage-1+ hardware-bound. |
+| v1.2.0 | 2026-05-09 | **RELEASED** | RSC code-layer 100% closure — 4 T3-archival scripts (`empirical_lawson_arxiv` + `empirical_p11b_arxiv` + `empirical_powerplant_arxiv` + `empirical_archetype_arxiv`) + 4 fixtures (`verify/fixtures/*.xml`) + `saturation_check.hexa` (sister of hexa-rtsc / hexa-cern) + `tests/test_saturation.hexa`. All 4 falsifiers at T1+T2×3+T3 = 100% bookkeeping closure. Canonical sentinel `__HEXA_FUSION_RSC_SATURATED__ STOP` emitted. Underlying physics CLAIMS still UNPROVEN (see §A.6 Stage-1+ honesty contract). |
+| v1.3.0 | ~2026-11 | planned | `tabletop_fusion` p-¹¹B aneutronic 1m³ live simulation wired (replaces RK4 stub with multi-species) + `plasma_deep` reduced-MHD 솔버 wired |
+| v2.0.0 | ~2026-12 | ASPIRATIONAL | 12-archetype closure 122/122 EXACT 자동 회귀 + lawson_triple gap resolved 또는 documented + Stage-1+ live raw-data feed (state/ITER_OPS_API live, state/KSTAR_PLASMA_LOG live) |
 
 ## §A.3 Cycle history
 
-- **Cycle 0 (2026-05-06)** — v1.0.0 initial extraction from n6-architecture@c0f1f570. Commit `1d2bad5`. 19 files / 10 seeds md5-verified MATCH.
+- **Cycle 0 (2026-05-06)** — v1.0.0 initial extraction from canon@c0f1f570. Commit `1d2bad5`. 19 files / 10 seeds md5-verified MATCH.
+- **Cycle 1 (2026-05-07 ~ 2026-05-08)** — v1.1.0 RSC code-layer 67% closure. iters 1-21: 4 T1 (`calc_*.hexa`) + 12 T2 (`numerics_*.hexa`) + 2 META (`falsifier_check` + `lint_numerics`) + 2 T3 scaffolds (`state/ITER_OPS_API` + `state/KSTAR_PLASMA_LOG`) + 5 tests + build pipeline (4 pillar PDFs via pandoc). sat-1 reached at iter 21. All 4 falsifiers locked at T1+T2×3, T3 path registered.
+- **Cycle 2 (2026-05-09)** — v1.2.0 RSC code-layer **100% closure** (T3-archival path landed; sister-pattern of hexa-rtsc / hexa-cern / hexa-antimatter saturation). 4 new `empirical_*_arxiv.hexa` scripts (Lawson/p-11B/powerplant/archetype corpus parity) + 4 fixtures (`verify/fixtures/*.xml`, totalResults ∈ [3142, 89456]) + `verify/saturation_check.hexa` (sat-1 + sat-2 + drift-lock) + `tests/test_saturation.hexa` (4-assert isolated regression). `falsifier_check.hexa` updated: F1_T3_SCRIPTS .. F4_T3_SCRIPTS populated, sentinel reads "100% closure (T1+T2+T3 archival locked)". Canonical sentinel `__HEXA_FUSION_RSC_SATURATED__ STOP` emitted on PASS path. **Honesty**: T3 here = arXiv-corpus existence parity, NOT live raw-data; underlying fusion physics CLAIMS remain UNPROVEN until Stage-1+ hardware (§A.6).
 
 ## §A.4 Falsifier preregister
 
-- **F-FUSION-1** — `lawson_triple_keV_s_per_m3` 1-decade gap (measured 5.6e21 vs n=6 closed-form 5.6e20). 측정 갱신 또는 closed-form refit 시 fit 가능 여부?
-- **F-FUSION-2** — tabletop p-¹¹B 1m³, Q=τ=4 break-even 실증 시 본 시뮬레이션과 일치?
-- **F-FUSION-3** — KSTAR-N6 RT-SC coil 48T 실현 시 Q=σ-φ=10 powerplant 도달?
-- **F-FUSION-4** — 12-archetype closure 122/122 EXACT, 새 archetype 추가 시 122 → 132 = 11·σ 패턴 유지?
+| ID         | Statement                                                                                      | Closure (v1.2.0) |
+|------------|------------------------------------------------------------------------------------------------|------------------|
+| F-FUSION-1 | `lawson_triple_keV_s_per_m3` 1-decade gap (measured 5.6e21 vs n=6 closed-form 5.6e20). 측정 갱신 또는 closed-form refit 시 fit 가능 여부?    | T1+T2×3+T3 (archival) = 100% bookkeeping. Live ITER/JET/KSTAR DT feed → `state/ITER_OPS_API.hexa` Stage-1+. |
+| F-FUSION-2 | tabletop p-¹¹B 1m³, Q=τ=4 break-even 실증 시 본 시뮬레이션과 일치?                                      | T1+T2×3+T3 (archival) = 100% bookkeeping. Real HB11/TAE/LPP/ENN tabletop demonstration → Stage-1+. |
+| F-FUSION-3 | KSTAR-N6 RT-SC coil 48T 실현 시 Q=σ-φ=10 powerplant 도달?                                          | T1+T2×3+T3 (archival) = 100% bookkeeping. Real RT-SC 48T coil + plasma demonstrator → `state/KSTAR_PLASMA_LOG.hexa` Stage-1+. |
+| F-FUSION-4 | 12-archetype closure 122/122 EXACT, 새 archetype 추가 시 122 → 132 = 11·σ 패턴 유지?                | T1+T2×3+T3 (archival) = 100% bookkeeping. Extended archetype set 122→132=11·σ pattern admission → Stage-1+. |
+
+**Honesty contract**: "100% closure" at v1.2.0 means `sat-1 ∧ sat-2` over evidence-files-on-disk (per `verify/saturation_check.hexa`), NOT physics-settled. T3 = arXiv-corpus existence parity (`empirical_*_arxiv.hexa`); T4 (live raw-data) is the only tier that can falsify and remains Stage-1+ hardware-bound. Saturated ≠ falsified ≠ confirmed. Saturated = bookkeeping/regression-locked.
 
 ## §A.5 Pending decisions
 

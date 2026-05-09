@@ -1,4 +1,4 @@
-// @canonical: n6-architecture@0570a835:domains/energy/fusion/verify_fusion.hexa
+// @canonical: canon@d1640e62:domains/energy/fusion/verify_fusion.hexa
 // @extracted: 2026-05-06
 // @md5_at_extraction: 7a1c3df7c63f1388af43e33a5f705d56
 # verify_fusion -- 핵융합 HEXA-FUSION n=6 에너지 균형 검증

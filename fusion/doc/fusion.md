@@ -1,4 +1,4 @@
-<!-- @canonical: n6-architecture@0570a835:domains/energy/fusion/fusion.md -->
+<!-- @canonical: canon@d1640e62:domains/energy/fusion/fusion.md -->
 <!-- @extracted: 2026-05-06 -->
 <!-- @md5_at_extraction: 289643cc78c636c7c9850d8ef1b9cd7c -->
 <!-- gold-standard: shared/harness/sample.md -->

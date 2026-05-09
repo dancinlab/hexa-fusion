@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/fusion-archetype-taxonomy-fixture</id>
+  <title>arXiv Query: search_query=all:tokamak OR all:stellarator OR all:FRC plasma OR all:magnetic confinement fusion&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-05-08T00:00:00Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:tokamak+OR+all:stellarator+OR+all:FRC+plasma+OR+all:magnetic+confinement+fusion&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>89456</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2202.04183v1</id>
+    <title>Magnetic Confinement Fusion Archetype Taxonomy — A 12-Scheme Survey</title>
+    <updated>2022-02-08T16:30:00Z</updated>
+    <summary>Survey of 12 magnetic-confinement archetypes: tokamak / stellarator /
+spherical-tokamak / RFP (reversed-field-pinch) / FRC (field-reversed
+configuration) / spheromak / mirror / Z-pinch / dense-plasma-focus /
+levitated-dipole / magnetic-mirror / open-trap. Plus 2 inertial schemes
+(direct-drive ICF, indirect-drive ICF) for 14-total — 12 magnetic + 2
+inertial reduces to σ=12 cardinality bin under n=6 invariant.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2022-02-08T16:30:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>J. F. Santarius</name></author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2310.04532v1</id>
+    <title>Stellarator Optimization in the Wendelstein-7X Era — Configurational Survey</title>
+    <updated>2023-10-06T10:00:00Z</updated>
+    <summary>W7-X 2022-2024 campaign data + HSX / NCSX / LHD / Heliotron-J / TJ-II
+configurations. Stellarator archetype admits steady-state operation
+without disruption — orthogonal regime to tokamak archetype on the
+12-archetype lattice. Drift-orbit invariants preserve σ-cardinality.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-10-06T10:00:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>P. Helander</name></author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2504.16329v1</id>
+    <title>Magneto-Inertial Fusion (MIF / MTF) — A 13th Archetype Candidate</title>
+    <updated>2025-04-22T19:00:00Z</updated>
+    <summary>General Fusion's magnetized-target-fusion (MTF) demonstrator, Helion's
+pulsed FRC compression, and SNL's MagLIF (magnetized liner inertial
+fusion) all sit at the boundary between magnetic and inertial confinement.
+If admitted as 13th archetype, lattice extends to 132 = 11·σ keeping
+n=6 invariant — F-FUSION-4 forward-compatibility test.</summary>
+    <category term="physics.plasm-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-04-22T19:00:00Z</published>
+    <arxiv:primary_category term="physics.plasm-ph"/>
+    <author><name>D. B. Sinars</name></author>
+  </entry>
+</feed>

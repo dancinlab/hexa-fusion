@@ -1,4 +1,4 @@
-<!-- @canonical: n6-architecture@0570a835:domains/physics/plasma-fusion-deep/plasma-fusion-deep.md -->
+<!-- @canonical: canon@d1640e62:domains/physics/plasma-fusion-deep/plasma-fusion-deep.md -->
 <!-- @extracted: 2026-05-06 -->
 <!-- @md5_at_extraction: 04bd11f645e8c5367771afb4d4a6d6f2 -->
 <!-- gold-standard: shared/harness/sample.md -->

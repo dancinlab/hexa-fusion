@@ -1,4 +1,4 @@
-<!-- @canonical: n6-architecture@0570a835:domains/energy/fusion-powerplant/fusion-powerplant.md -->
+<!-- @canonical: canon@d1640e62:domains/energy/fusion-powerplant/fusion-powerplant.md -->
 <!-- @extracted: 2026-05-06 -->
 <!-- @md5_at_extraction: 692bea1ad31cc873d27b8cbeac2b1c5d -->
 <!-- gold-standard: shared/harness/sample.md -->

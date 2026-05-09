@@ -1,4 +1,4 @@
-<!-- @canonical: n6-architecture@0570a835:domains/energy/fusion/fusion_ledger.README.md -->
+<!-- @canonical: canon@d1640e62:domains/energy/fusion/fusion_ledger.README.md -->
 <!-- @extracted: 2026-05-06 -->
 <!-- @md5_at_extraction: ab7d5420d32cbef2dbba236b3caac6b2 -->
 # fusion_ledger

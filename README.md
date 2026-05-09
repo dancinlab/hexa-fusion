@@ -15,7 +15,7 @@
 [![Honest negative](https://img.shields.io/badge/honest_negative-lawson__triple_1--decade-orange.svg)]( #verification )
 
 > **Status (2026-05-06)**: initial standalone extraction from
-> `n6-architecture@c0f1f570`. Sister-extraction of
+> `canon@c0f1f570`. Sister-extraction of
 > [`hexa-bio` v1.0.0](https://github.com/dancinlab/hexa-bio).
 
 > **Distribution**: GitHub canonical at <https://github.com/dancinlab/hexa-fusion>.
@@ -27,7 +27,7 @@
 ## § Why
 
 `hexa-fusion` is the **standalone Fusion Toolkit** of the HEXA family —
-the empirical companion to `n6-architecture/domains/energy/fusion/` and
+the empirical companion to `canon/domains/energy/fusion/` and
 the canonical extraction-of-record for the 27-item D-T ignition ledger.
 
 The 4 pillars form a **tetrahedron** organized around the n=6 invariant lattice:
@@ -219,8 +219,8 @@ All subcommands accept `--json` for machine-parseable output.
 |---------------------------------------------------------------------------|-------------------------------------------------|
 | [`dancinlab/hexa-rtsc`](https://github.com/dancinlab/hexa-rtsc) | RT-SC: 48T SC coil substrate (`σ·τ = 48`)       |
 | [`dancinlab/hexa-bio`](https://github.com/dancinlab/hexa-bio)   | Sister Molecular Toolkit (HEXA family)          |
-| Upstream concept SSOT                                                     | `n6-architecture/domains/energy/fusion/fusion.md` |
-| Upstream architecture SHA                                                 | `n6-architecture@c0f1f570` (extraction commit)  |
+| Upstream concept SSOT                                                     | `canon/domains/energy/fusion/fusion.md` |
+| Upstream architecture SHA                                                 | `canon@c0f1f570` (extraction commit)  |
 | HEXA package registry                                                     | [`hexa-lang/tool/pkg/registry.tsv`](https://github.com/dancinlab/hexa-lang/blob/main/tool/pkg/registry.tsv) |
 
 The `48T` superconducting coil identity (`σ(6) · τ(6) = 12 · 4 = 48`)
@@ -238,5 +238,5 @@ Author: 박민우 <nerve011235@gmail.com>
 Copyright (c) 2026 dancinlab.
 
 **Peaceful-only scope**: this toolkit is restricted to peaceful fusion
-research per `n6-architecture@c0f1f570`. Weapons applications are
+research per `canon@c0f1f570`. Weapons applications are
 explicitly out-of-scope.

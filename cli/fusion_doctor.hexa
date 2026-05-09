@@ -99,7 +99,7 @@ fn _probe_root() {
 fn _probe_file(label, root, rel) {
     let p = root + "/" + rel
     if _is_file(p) { return [label, "OK", p, ""] }
-    return [label, "MISS", p, "extract from n6-architecture or pull latest hexa-fusion"]
+    return [label, "MISS", p, "extract from canon or pull latest hexa-fusion"]
 }
 
 fn _probe_optional(label, root, rel) {

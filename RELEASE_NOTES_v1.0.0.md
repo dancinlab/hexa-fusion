@@ -4,7 +4,7 @@
 **Closure verdict**: **PASS_WITH_HONEST_NEGATIVE** (26/27 EXACT + 1
 falsified entry preserved per HONESTY guard; 1/4 pillars wired; 3/4
 doc-only)
-**Provenance**: extracted 2026-05-06 from `n6-architecture@c0f1f570`.
+**Provenance**: extracted 2026-05-06 from `canon@c0f1f570`.
 Sister-extraction of `hexa-bio` v1.0.0 (registry L24).
 
 This is the **initial standalone release** of `hexa-fusion`, a 4-pillar
@@ -72,7 +72,7 @@ hexa-fusion verify      # 28-item comprehensive verifier
    `fusion`.** The other 3 pillars inherit the lattice claim by
    hypothesis.
 4. **Peaceful-only scope.** Weapons applications are explicitly
-   out-of-scope per `n6-architecture@c0f1f570`.
+   out-of-scope per `canon@c0f1f570`.
 5. **Public-repo maintenance burden** — issue/PR triage cost is on the
    author; downstream consumers should not assume future SLA.
 
@@ -82,8 +82,8 @@ hexa-fusion verify      # 28-item comprehensive verifier
   — RT-SC: 48T SC coil substrate (`σ·τ = 48`)
 - Sister extraction: [`need-singularity/hexa-bio` v1.0.0](https://github.com/need-singularity/hexa-bio)
   — Molecular Toolkit (HEXA family)
-- Upstream concept SSOT: `n6-architecture/domains/energy/fusion/fusion.md`
-- Upstream architecture SHA: `n6-architecture@c0f1f570`
+- Upstream concept SSOT: `canon/domains/energy/fusion/fusion.md`
+- Upstream architecture SHA: `canon@c0f1f570`
 
 ## License
 

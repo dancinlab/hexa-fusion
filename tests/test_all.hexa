@@ -27,6 +27,7 @@ let CASES = [
     "test_lattice.hexa|__HEXA_FUSION_TEST_LATTICE__ PASS",
     "test_calculators.hexa|__HEXA_FUSION_TEST_CALCULATORS__ PASS",
     "test_cli_verify.hexa|__HEXA_FUSION_TEST_CLI_VERIFY__ PASS",
+    "test_saturation.hexa|__HEXA_FUSION_TEST_SATURATION__ PASS",
 ]
 
 fn shq(s: str) -> str {

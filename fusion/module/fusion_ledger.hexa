@@ -1,6 +1,6 @@
-// @canonical: n6-architecture@0570a835:domains/energy/fusion/fusion_ledger.hexa
+// @canonical: canon@d1640e62:domains/energy/fusion/fusion_ledger.hexa
 // @extracted: 2026-05-06
-// @md5_at_extraction: c2b432a65fc089f6de4f3c9075bd3d81
+// @md5_at_extraction: 23369d17165f00bf4d0179a24d46b31b
 #!hexa strict
 // modules/fusion_ledger/fusion_ledger.hexa — n=6 fusion-energy constants verifier
 //
@@ -9,7 +9,7 @@
 // @usage(hexa run modules/fusion_ledger/fusion_ledger.hexa --verify [--json])
 // @sentinel(__FUSION_LEDGER__ <PASS|FAIL> [reason=<slug>])
 // @origin(rewrite of lost 425-LOC Python module via .hexa, sourced from
-//         ~/core/n6-architecture/domains/energy/fusion/ + verify_fusion.hexa
+//         ~/core/canon/domains/energy/fusion/ + verify_fusion.hexa
 //         + data/iter_constants.json (already on disk).
 //         HONESTY: previous Python build verified 26/27 (96.3%); the
 //         lawson_triple_keV_s_per_m3 entry is falsified by one decade
