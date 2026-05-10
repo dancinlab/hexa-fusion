@@ -7,6 +7,7 @@
 > honest negative) and a **28-item comprehensive verifier**; three pillars
 > ship as scope-defining doc bundles at v1.0.0.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20102608.svg)](https://doi.org/10.5281/zenodo.20102608)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-informational.svg)](CHANGELOG.md)
 [![Pillars: 1/4 wired](https://img.shields.io/badge/pillars-1%2F4_wired_(fusion)-blue.svg)]( #verification )
