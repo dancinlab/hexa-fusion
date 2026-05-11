@@ -21,7 +21,7 @@
 
 > **Distribution**: GitHub canonical at <https://github.com/dancinlab/hexa-fusion>.
 > CLI tooling — installed via `hx install hexa-fusion` from the hexa-lang
-> registry, or `git clone` directly.
+> package registry.
 
 ---
 
@@ -167,53 +167,28 @@ covering Carnot, Lawson, Q, SC coil, plasma identities, ledger sanity).
 ### Via `hx` (recommended)
 
 ```bash
+# Install hexa-lang (ships `hexa` + `hx` package manager)
+curl -fsSL https://raw.githubusercontent.com/dancinlab/hexa-lang/main/install.sh | bash
+
+# Install hexa-fusion
 hx install hexa-fusion          # global, pulls latest from registry
 hx install hexa-fusion@1.0.0    # pin specific version
-hexa-fusion --version           # → 1.0.0
+hexa-fusion --version
 ```
 
-### Via git clone (works today)
+`hx install hexa-fusion` pulls from <https://github.com/dancinlab/hexa-fusion> and
+installs the standalone CLI under `$HX_HOME/bin/hexa-fusion`. The hexa-lang
+package registry resolves any cross-substrate dependencies declared in
+`hexa.toml`.
 
-```bash
-git clone https://github.com/dancinlab/hexa-fusion.git ~/.hexa-fusion
-export HEXA_FUSION_ROOT=~/.hexa-fusion
-export PATH="$HEXA_FUSION_ROOT/cli:$PATH"
+### Optional deps
 
-# Run any subcommand:
-hexa run $HEXA_FUSION_ROOT/cli/hexa-fusion.hexa selftest
-hexa run $HEXA_FUSION_ROOT/cli/hexa-fusion.hexa ledger
-hexa run $HEXA_FUSION_ROOT/cli/hexa-fusion.hexa verify
-```
-
-### Quick start
-
-```bash
-hexa-fusion selftest    # core + derivative sentinel sweep
-hexa-fusion status      # single-screen project status (pillars/ledger/falsifiers/cadence)
-hexa-fusion ledger      # 27-item D-T ignition ledger (26 EXACT + 1 honest neg)
-hexa-fusion calc        # closed-form fusion calculators
-hexa-fusion dse         # KSTAR-N6 design-space exploration
-hexa-fusion verify      # 28-item comprehensive verifier
-
-# derivative analysis (sscb-pattern composition):
-hexa-fusion margin               # per-row residual/headroom (tightest first)
-hexa-fusion margin --top 5       # only 5 tightest rows
-hexa-fusion whatif               # baseline n=6 lattice re-run
-hexa-fusion whatif --set lawson_calibration=10 --counter-factual
-                                 # close the honest negative on paper
-hexa-fusion sensitivity          # ±%-sweep dominance map
-hexa-fusion archetype            # Mk.I→Mk.V projector
-hexa-fusion archetype --mk mk5   # drill into a single Mk
-hexa-fusion pillar               # 4-pillar deep-dive
-hexa-fusion pillar --pillar fusion
-hexa-fusion doctor               # env health probe
-hexa-fusion doctor --strict      # treat WARN as FAIL
-```
-
-All subcommands accept `--json` for machine-parseable output.
+`hexa-fusion` is **pure hexa-lang stdlib** — zero Python deps, zero external.
+All default subcommands run with `hx install hexa-fusion` alone. Cross-substrate
+extras (e.g. `qmirror` for ANU-QRNG + Aer state-vector simulator) are
+auto-resolved by `hx install` when declared in `hexa.toml`.
 
 ---
-
 ## § Cross-link
 
 | Repo                                                                      | Role                                            |
