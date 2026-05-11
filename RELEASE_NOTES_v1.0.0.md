@@ -32,7 +32,7 @@ FUSION_POWERPLANT (KSTAR-N6, DOC) / PLASMA_DEEP (DOC).
 - **MIT** license; **zero Python deps** at v1.0.0 (pure hexa-lang
   closed-form arithmetic).
 - **GitHub-only distribution** — canonical at
-  <https://github.com/need-singularity/hexa-fusion>.
+  <https://github.com/dancinlab/hexa-fusion>.
 
 ## Installation
 
@@ -42,7 +42,7 @@ hx install hexa-fusion@1.0.0
 hexa-fusion --version           # → 1.0.0
 
 # Or git clone (works today):
-git clone https://github.com/need-singularity/hexa-fusion.git ~/.hexa-fusion
+git clone https://github.com/dancinlab/hexa-fusion.git ~/.hexa-fusion
 export HEXA_FUSION_ROOT=~/.hexa-fusion
 export PATH="$HEXA_FUSION_ROOT/cli:$PATH"
 hexa-fusion selftest
@@ -78,9 +78,9 @@ hexa-fusion verify      # 28-item comprehensive verifier
 
 ## Cross-link
 
-- Sister substrate: [`need-singularity/hexa-rtsc`](https://github.com/need-singularity/hexa-rtsc)
+- Sister substrate: [`dancinlab/hexa-rtsc`](https://github.com/dancinlab/hexa-rtsc)
   — RT-SC: 48T SC coil substrate (`σ·τ = 48`)
-- Sister extraction: [`need-singularity/hexa-bio` v1.0.0](https://github.com/need-singularity/hexa-bio)
+- Sister extraction: [`dancinlab/hexa-bio` v1.0.0](https://github.com/dancinlab/hexa-bio)
   — Molecular Toolkit (HEXA family)
 - Upstream concept SSOT: `canon/domains/energy/fusion/fusion.md`
 - Upstream architecture SHA: `canon@c0f1f570`
@@ -89,4 +89,4 @@ hexa-fusion verify      # 28-item comprehensive verifier
 
 MIT — see [LICENSE](LICENSE).
 
-Copyright (c) 2026 need-singularity (박민우 <nerve011235@gmail.com>).
+Copyright (c) 2026 dancinlab (박민우 <nerve011235@gmail.com>).

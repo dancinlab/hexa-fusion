@@ -83,4 +83,4 @@ identity is one of those 26 EXACT entries.
 - Verifier sweep (28 items): `fusion/module/verify_fusion.hexa`
 - HONESTY guard text:        `fusion/doc/fusion_ledger.README.md`
 - Mk.V Lawson closure proof: `fusion/doc/fusion.md` §8
-- 48T SC coil substrate:     <https://github.com/need-singularity/hexa-rtsc>
+- 48T SC coil substrate:     <https://github.com/dancinlab/hexa-rtsc>

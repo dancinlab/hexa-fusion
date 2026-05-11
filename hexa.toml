@@ -12,8 +12,8 @@ entry = "cli/hexa-fusion.hexa"
 description = "Fusion Toolkit (HEXA family) — D-T ignition + p-11B aneutronic + KSTAR-N6 powerplant + plasma deep. n=6 invariant lattice."
 license = "MIT"
 authors = ["박민우 <nerve011235@gmail.com>"]
-repository = "https://github.com/need-singularity/hexa-fusion"
-homepage = "https://github.com/need-singularity/hexa-fusion"
+repository = "https://github.com/dancinlab/hexa-fusion"
+homepage = "https://github.com/dancinlab/hexa-fusion"
 readme = "README.md"
 keywords = ["fusion-toolkit", "hexa-family", "lawson", "d-t-ignition", "p-11b-aneutronic", "kstar-n6", "plasma-deep", "n6-invariant"]
 categories = ["physics", "energy", "plasma-simulation"]
