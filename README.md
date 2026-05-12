@@ -162,24 +162,32 @@ covering Carnot, Lawson, Q, SC coil, plasma identities, ledger sanity).
 
 ---
 
-## § Install
-
-### Via `hx` (recommended)
+## Install
 
 ```bash
-# Install hexa-lang (ships `hexa` + `hx` package manager)
-curl -fsSL https://raw.githubusercontent.com/dancinlab/hexa-lang/main/install.sh | bash
+# 1. Install hexa-lang (gives you `hexa` + `hx` package manager)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/dancinlab/hexa-lang/main/install.sh)"
 
-# Install hexa-fusion
-hx install hexa-fusion          # global, pulls latest from registry
-hx install hexa-fusion@1.0.0    # pin specific version
-hexa-fusion --version
+# 2. Install hexa-fusion
+hx install hexa-fusion
 ```
 
-`hx install hexa-fusion` pulls from <https://github.com/dancinlab/hexa-fusion> and
-installs the standalone CLI under `$HX_HOME/bin/hexa-fusion`. The hexa-lang
-package registry resolves any cross-substrate dependencies declared in
-`hexa.toml`.
+## Run
+
+```bash
+hexa-fusion ledger          # 27-item D-T ignition ledger (26 EXACT + 1 honest negative)
+hexa-fusion calc            # closed-form fusion calculators (Lawson / Q / Carnot)
+hexa-fusion dse             # design-space exploration (KSTAR-N6 powerplant scope)
+hexa-fusion verify          # 28-item comprehensive verifier sweep
+hexa-fusion margin          # per-row residual / headroom report (tightest first)
+hexa-fusion whatif          # override n=6 lattice, re-run ledger, diff matches
+hexa-fusion sensitivity     # ±perturbation sweep over n=6 anchors (dominance map)
+hexa-fusion archetype       # Mk.I→Mk.V projector + 122/122 EXACT closure tally
+hexa-fusion pillar          # per-pillar deep-dive (4-pillar tetrahedron)
+hexa-fusion status          # single-screen project status (pillars/ledger/falsifiers/cadence)
+hexa-fusion doctor          # env health probe (runtime, modules, hx shim)
+hexa-fusion selftest        # sub-command sentinel sweep (core + derivative)
+```
 
 ### Optional deps
 
