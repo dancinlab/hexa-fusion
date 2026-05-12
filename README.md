@@ -25,7 +25,7 @@
 
 ---
 
-## § Why
+## Why
 
 `hexa-fusion` is the **standalone Fusion Toolkit** of the HEXA family —
 the empirical companion to `canon/domains/energy/fusion/` and
@@ -74,48 +74,7 @@ against the empirical ignition criterion `nτT ≥ 3 × 10²¹ keV·s/m³`. The
 
 ---
 
-## § Verbs (4-pillar table)
-
-| Pillar              | Status              | n=6 lattice                    | Empirical scope                                |
-|---------------------|---------------------|--------------------------------|------------------------------------------------|
-| `fusion`            | **WIRED v1.0.0**    | EXACT 26/27 + 1 honest neg.    | 27-item ledger + 28-item verify + Lawson closure |
-| `tabletop_fusion`   | DOC v1.0.0          | inherited                      | p-11B aneutronic feasibility scope             |
-| `fusion_powerplant` | DOC v1.0.0          | inherited                      | KSTAR-N6 powerplant design scope               |
-| `plasma_deep`       | DOC v1.0.0          | inherited                      | plasma physics deep-dive notes                 |
-
-CLI sub-commands wired at v1.0.0 (core):
-
-| sub-command          | purpose                                              | source                       |
-|----------------------|------------------------------------------------------|------------------------------|
-| `hexa-fusion ledger` | 27-item D-T ignition ledger                          | `fusion/module/fusion_ledger.hexa` |
-| `hexa-fusion calc`   | closed-form fusion calculators (Lawson / Q / Carnot) | `cli/fusion_calc.hexa`       |
-| `hexa-fusion dse`    | design-space exploration (KSTAR-N6 powerplant scope) | `cli/fusion_dse.hexa`        |
-| `hexa-fusion verify` | 28-item comprehensive verifier (bare); `verify all` runs every `verify/*.hexa`; `verify lattice` etc. | `cli/fusion_verify.hexa` + `verify/`  |
-
-Derivative analysis (sscb-pattern composition; additive over core):
-
-| sub-command                | purpose                                                              | source                            |
-|----------------------------|----------------------------------------------------------------------|-----------------------------------|
-| `hexa-fusion margin`       | per-row residual / headroom report (sorted tightest first)           | `cli/fusion_margin.hexa`          |
-| `hexa-fusion whatif`       | override n=6 lattice → re-run 27-row ledger → diff matches           | `cli/fusion_whatif.hexa`          |
-| `hexa-fusion sensitivity`  | ±-perturbation sweep over each n=6 anchor (dominance map)            | `cli/fusion_sensitivity.hexa`     |
-| `hexa-fusion archetype`    | Mk.I→Mk.V projector + 122/122 EXACT closure tally                    | `cli/fusion_archetype.hexa`       |
-| `hexa-fusion pillar`       | per-pillar deep-dive (4-pillar tetrahedron)                          | `cli/fusion_pillar.hexa`          |
-| `hexa-fusion status`       | single-screen project status (pillars / ledger / falsifiers / cadence) | `cli/fusion_status.hexa`        |
-| `hexa-fusion doctor`       | env health probe (runtime / modules / hx shim)                       | `cli/fusion_doctor.hexa`          |
-
-The derivative modules follow the composition pattern from
-[`hexa-sscb`](https://github.com/dancinlab/hexa-sscb)
-(`verify/sscb_verify.py`, `verify/cross_doc_audit.py`, `verify/bom_lattice.py`)
-— margin / whatif / sensitivity / mk-projection / doctor / status — applied
-to hexa-fusion's 27-row D-T ignition ledger and 4-pillar tetrahedron.
-
-Verdict: **PASS_WITH_HONEST_NEGATIVE** (1/4 pillars wired; 3/4 doc-only;
-ledger 26/27 EXACT; archetype closure 122/122 EXACT v5).
-
----
-
-## § Verification
+## Verification
 
 **26/27 EXACT (96.3%), `lawson_triple_keV_s_per_m3` 1-decade falsified
 (measured 5.6e21 vs n=6 closed-form 5.6e20) — preserved as honest
@@ -197,7 +156,7 @@ extras (e.g. `qmirror` for ANU-QRNG + Aer state-vector simulator) are
 auto-resolved by `hx install` when declared in `hexa.toml`.
 
 ---
-## § Cross-link
+## Cross-link
 
 | Repo                                                                      | Role                                            |
 |---------------------------------------------------------------------------|-------------------------------------------------|
@@ -214,7 +173,7 @@ room-temperature SC primary deliverable).
 
 ---
 
-## § License
+## License
 
 MIT. See [LICENSE](LICENSE).
 
