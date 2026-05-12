@@ -12,6 +12,7 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-informational.svg)](CHANGELOG.md)
 [![Pillars: 1/4 wired](https://img.shields.io/badge/pillars-1%2F4_wired_(fusion)-blue.svg)]( #verification )
 [![Ledger 26/27 EXACT](https://img.shields.io/badge/ledger-26%2F27_EXACT_(96.3%25)-brightgreen.svg)]( #verification )
+[![verify run_all 23/23](https://img.shields.io/badge/verify-23%2F23_(bookkeeping)-brightgreen.svg)](verify/run_all.hexa)
 [![n=6 lattice](https://img.shields.io/badge/n%3D6-σ%3D12_τ%3D4_φ%3D2_J₂%3D24-purple.svg)]( #why )
 [![Honest negative](https://img.shields.io/badge/honest_negative-lawson__triple_1--decade-orange.svg)]( #verification )
 
@@ -115,6 +116,7 @@ covering Carnot, Lawson, Q, SC coil, plasma identities, ledger sanity).
 | `hexa-fusion verify falsifier`         | ✅ PASS | F-FUSION-1/2/3/4 all at 67% closure (T1+T2 locked, T3 TBD) |
 | `hexa-fusion verify lint-numerics`     | ✅ PASS | 9 numerics_*.hexa scripts × 5 invariants = 46/46 conform |
 | `hexa-fusion verify all`               | ✅ PASS | RSC inventory: 15 verify/*.hexa (T1 4 + T2 9 + META 2), aggregate 15/15 |
+| `hexa run verify/run_all.hexa`         | ✅ PASS | orchestrator sweep: **23/23 verify/*.hexa scripts** (T1×2 + T2×12 + T3×4 + meta×5) — bookkeeping closure only, sister of `hexa-rtsc` run_all |
 | `make -C build check`                  | ✅ PASS | pandoc + xelatex + hexa toolchain ready (build/Makefile) |
 | `make -C build all`                    | ✅ PASS | 4 pillar PDFs rebuilt (fusion / tabletop / powerplant / plasma) |
 | `hx install hexa-fusion`               | ✅ PASS | post-install: selftest PASS + derivative smoke PASS |
@@ -146,6 +148,9 @@ hexa-fusion pillar          # per-pillar deep-dive (4-pillar tetrahedron)
 hexa-fusion status          # single-screen project status (pillars/ledger/falsifiers/cadence)
 hexa-fusion doctor          # env health probe (runtime, modules, hx shim)
 hexa-fusion selftest        # sub-command sentinel sweep (core + derivative)
+
+# Orchestrator (sister of hexa-rtsc verify/run_all.hexa)
+hexa run verify/run_all.hexa  # aggregate sweep — 23/23 verify/*.hexa (bookkeeping closure)
 ```
 
 ### Optional deps

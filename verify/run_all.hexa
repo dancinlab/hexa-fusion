@@ -1,0 +1,123 @@
+#!hexa strict
+// hexa-fusion/verify/run_all.hexa — orchestrator (.hexa primary).
+//
+// Single CLI entry that runs all verify/*.hexa scripts and aggregates
+// pass/fail. Sister of hexa-rtsc's verify/run_all.hexa (same shape,
+// different falsifier surface) — both feed the same bookkeeping-closure
+// contract (sat-1 ∧ sat-2 ⇒ regression-locked, NOT physics-settled).
+//
+// Inventory (recipe §7.3 §1 #7+#13):
+//   T1 algebraic   : calc_fusion + calc_tabletop                          (2)
+//   T2 numerical   : numerics_fusion + numerics_fusion_parity +           (12)
+//                    numerics_fusion_solver + numerics_fusion_burnup +
+//                    numerics_tabletop + numerics_tabletop_parity +
+//                    numerics_tabletop_solver +
+//                    numerics_powerplant + numerics_powerplant_dse +
+//                    numerics_plasma_deep +
+//                    numerics_cross_pillar + numerics_lattice_arithmetic
+//   T3 archival    : empirical_lawson_arxiv + empirical_p11b_arxiv +      (4)
+//                    empirical_powerplant_arxiv + empirical_archetype_arxiv
+//   meta           : lattice_check + cross_doc_audit +                    (5)
+//                    falsifier_check + lint_numerics + saturation_check
+//
+// Total: 23 verify/*.hexa scripts.
+//
+// Run:
+//     hexa run verify/run_all.hexa     # exit 0 = all subscripts PASS
+//
+// HONESTY (closure-honesty-contract):
+//
+//   PASS here means RC=0 from each subscript — bookkeeping closure, NOT
+//   physics-settled. T3 = arXiv-corpus existence parity, not live raw-
+//   data. Underlying fusion empirical CLAIMS (Lawson DT ignition,
+//   p-11B aneutronic break-even, RT-SC 48 T → Q=10 powerplant,
+//   12-archetype 122/122 closure) remain UNPROVEN until Stage-1+
+//   hardware (ITER/JET/KSTAR DT feed, tabletop p-11B demo, 48 T coil,
+//   13th-archetype admission). Saturated ≠ falsified ≠ confirmed.
+//
+// LATTICE_POLICY.md compliance: lattice tautologies alone (σ·φ=24)
+// are NOT sufficient verification. The numerics_* tier carries the
+// real-limits anchors (Lawson L1, Carnot L10, Greenwald L8, etc. — see
+// LIMIT_BREAKTHROUGH.md §2). meta/falsifier_check.hexa tracks the
+// real falsifier surface, not lattice fit.
+
+let SCRIPTS: [str] = [
+    // ─── T1 algebraic ──────────────────────────────────────────────
+    "verify/calc_fusion.hexa",
+    "verify/calc_tabletop.hexa",
+
+    // ─── T2 numerical ──────────────────────────────────────────────
+    "verify/numerics_fusion.hexa",
+    "verify/numerics_fusion_parity.hexa",
+    "verify/numerics_fusion_solver.hexa",
+    "verify/numerics_fusion_burnup.hexa",
+    "verify/numerics_tabletop.hexa",
+    "verify/numerics_tabletop_parity.hexa",
+    "verify/numerics_tabletop_solver.hexa",
+    "verify/numerics_powerplant.hexa",
+    "verify/numerics_powerplant_dse.hexa",
+    "verify/numerics_plasma_deep.hexa",
+    "verify/numerics_cross_pillar.hexa",
+    "verify/numerics_lattice_arithmetic.hexa",
+
+    // ─── T3 archival (arXiv corpus parity) ─────────────────────────
+    "verify/empirical_lawson_arxiv.hexa",
+    "verify/empirical_p11b_arxiv.hexa",
+    "verify/empirical_powerplant_arxiv.hexa",
+    "verify/empirical_archetype_arxiv.hexa",
+
+    // ─── meta (lattice + cross-doc + 3 closure gates) ──────────────
+    "verify/lattice_check.hexa",
+    "verify/cross_doc_audit.hexa",
+    "verify/falsifier_check.hexa",
+    "verify/lint_numerics.hexa",
+    "verify/saturation_check.hexa",
+]
+
+fn main() {
+    println("========================================================================")
+    println("  hexa-fusion verify/run_all — aggregate sweep")
+    println("========================================================================")
+    let mut passed = 0
+    let mut failed = 0
+    for s in SCRIPTS {
+        println("")
+        println("---- " + s + " ----")
+        let rc_str = exec("hexa run " + s + " >/tmp/_hexa_fusion_v.out 2>&1; echo $?").trim()
+        let rc = int(rc_str)
+        let out = exec("cat /tmp/_hexa_fusion_v.out 2>/dev/null")
+        // print last 6 lines for compactness
+        let lines = out.split("\n")
+        let n = lines.len()
+        let mut start = 0
+        if n > 6 { start = n - 6 }
+        let mut k = start
+        while k < n {
+            println(lines[k])
+            k = k + 1
+        }
+        if rc == 0 {
+            passed = passed + 1
+            println("  → " + s + " PASS")
+        } else {
+            failed = failed + 1
+            println("  → " + s + " FAIL (rc=" + str(rc) + ")")
+        }
+    }
+    println("")
+    println("========================================================================")
+    let total = passed + failed
+    println("  " + str(passed) + "/" + str(total) + " scripts passed")
+    if failed > 0 {
+        println("  verify sweep FAILED — see per-script output above.")
+        println("__HEXA_FUSION_RUN_ALL__ FAIL")
+        exit(1)
+    }
+    println("  PASS — bookkeeping closure across 23 verify/*.hexa scripts.")
+    println("")
+    println("  HONESTY: PASS = subscript rc=0 (bookkeeping). T3 = arXiv-corpus")
+    println("  existence parity, NOT live raw-data. Underlying fusion CLAIMS")
+    println("  (Lawson, p-11B Q=4, 48 T → Q=10, 12-archetype) remain UNPROVEN")
+    println("  until Stage-1+ hardware. Saturated ≠ falsified ≠ confirmed.")
+    println("__HEXA_FUSION_RUN_ALL__ PASS")
+}

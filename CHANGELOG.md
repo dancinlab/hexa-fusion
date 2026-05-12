@@ -5,6 +5,35 @@ All notable changes to **hexa-fusion** are documented here. Format follows
 
 ## [Unreleased]
 
+### Added (2026-05-13 — Cycle 3 100% bookkeeping closure)
+
+- `verify/run_all.hexa` (124 lines) — standalone `.hexa` orchestrator
+  mirroring `hexa-rtsc/hexa-ufo/hexa-cern` convention. Enumerates all
+  23 verify/*.hexa subjects (T1 algebraic × 2 + T2 numerical × 12 +
+  T3 archival × 4 + meta × 5) and aggregates per-script rc. PASS
+  sentinel `__HEXA_FUSION_RUN_ALL__ PASS — 23/23 green`.
+
+### Closure (2026-05-13)
+
+Aggregate scoreboard via `verify/run_all.hexa`:
+- **23/23 scripts PASS** — bookkeeping closure across all 4 falsifier
+  rows (F-FUSION-1/2/3/4) at T1 + T2×3 + T3-archival.
+- 100% here is **BOOKKEEPING** (T1 closed-form algebra + T2 closed-form
+  numerics + T3 archival arXiv-corpus paper-existence parity), **not**
+  bench measurement. Underlying fusion empirical CLAIMS remain
+  UNPROVEN until Stage-1+ live hardware: ITER/JET/KSTAR DT feed
+  (F-FUSION-1), tabletop p-¹¹B Q=τ=4 demo (F-FUSION-2), RT-SC 48 T
+  coil + Q=σ-φ=10 powerplant (F-FUSION-3), 13th-archetype admission
+  (F-FUSION-4). Honest negative `lawson_triple_keV_s_per_m3` (1-decade
+  gap, measured 5.6e21 vs n=6 closed-form 5.6e20) preserved.
+- Real-limits authority is `LIMIT_BREAKTHROUGH.md` (Lawson L1, Carnot
+  L10, Greenwald L8, etc.) and `LATTICE_POLICY.md` (σ·φ=24 lattice
+  tautologies alone are NOT sufficient verification — numerics_*
+  scripts carry the real-limits anchors).
+- No n=6 lattice fit applied to external machine invariants
+  (ITER / KSTAR / NIF / Tokamak Energy hardware specs per raw#10 C3 —
+  external entity numbers used as cited from their public TDR/CDR).
+
 ## [1.1.0] — 2026-05-08
 
 ### Released — RSC closure cycle (21 iterations, recipe §7 saturation)

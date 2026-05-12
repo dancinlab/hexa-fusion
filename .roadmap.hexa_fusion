@@ -4,7 +4,7 @@
 > deadlines, pointers. Sister substrate of `hexa-bio` / `hexa-rtsc` /
 > `hexa-ufo` / `petite-cern` under `dancinlab` org.
 
-**Last sync**: 2026-05-09 · **Current release**: v1.2.0 · **Branch**: `main`
+**Last sync**: 2026-05-13 · **Current release**: v1.2.0 · **Branch**: `main`
 
 ---
 
@@ -51,6 +51,7 @@ Master identity: **σ·φ = n·τ = J₂ = 24**. Q-gain = σ-φ = 10 (powerplant
 - **Cycle 0 (2026-05-06)** — v1.0.0 initial extraction from canon@c0f1f570. Commit `1d2bad5`. 19 files / 10 seeds md5-verified MATCH.
 - **Cycle 1 (2026-05-07 ~ 2026-05-08)** — v1.1.0 RSC code-layer 67% closure. iters 1-21: 4 T1 (`calc_*.hexa`) + 12 T2 (`numerics_*.hexa`) + 2 META (`falsifier_check` + `lint_numerics`) + 2 T3 scaffolds (`state/ITER_OPS_API` + `state/KSTAR_PLASMA_LOG`) + 5 tests + build pipeline (4 pillar PDFs via pandoc). sat-1 reached at iter 21. All 4 falsifiers locked at T1+T2×3, T3 path registered.
 - **Cycle 2 (2026-05-09)** — v1.2.0 RSC code-layer **100% closure** (T3-archival path landed; sister-pattern of hexa-rtsc / hexa-cern / hexa-antimatter saturation). 4 new `empirical_*_arxiv.hexa` scripts (Lawson/p-11B/powerplant/archetype corpus parity) + 4 fixtures (`verify/fixtures/*.xml`, totalResults ∈ [3142, 89456]) + `verify/saturation_check.hexa` (sat-1 + sat-2 + drift-lock) + `tests/test_saturation.hexa` (4-assert isolated regression). `falsifier_check.hexa` updated: F1_T3_SCRIPTS .. F4_T3_SCRIPTS populated, sentinel reads "100% closure (T1+T2+T3 archival locked)". Canonical sentinel `__HEXA_FUSION_RSC_SATURATED__ STOP` emitted on PASS path. **Honesty**: T3 here = arXiv-corpus existence parity, NOT live raw-data; underlying fusion physics CLAIMS remain UNPROVEN until Stage-1+ hardware (§A.6).
+- **Cycle 3 (2026-05-13)** — `verify/run_all.hexa` orchestrator landed (sister of `hexa-rtsc/verify/run_all.hexa`). Enumerates all 23 verify/*.hexa scripts (T1×2 + T2×12 + T3×4 + meta×5) and aggregates rc=0 / rc!=0. Local run: `__HEXA_FUSION_RUN_ALL__ PASS` @ 23/23. Sister scoreboard parity with hexa-rtsc 36/36 run_all sweep — bookkeeping closure only, NOT physics-settled. README badge `verify 23/23 (bookkeeping)` added; Run section documents the orchestrator entry-point. **Honesty preserved**: T3 still arXiv-corpus parity (not live raw-data); F-FUSION-1/2/3/4 still Stage-1+ hardware-bound for empirical closure.
 
 ## §A.4 Falsifier preregister
 
