@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" role="img" aria-label="hexa-fusion logo">
+  <!-- outer hexagon (n=6 lattice) -->
+  <polygon points="70,8 130,42 130,98 70,132 10,98 10,42"
+           fill="none" stroke="#bf8700" stroke-width="6"
+           stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- inner plasma triangle (D + T → He) -->
+  <polygon points="70,38 102,92 38,92"
+           fill="none" stroke="#bf8700" stroke-width="4"
+           stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- central fusion spark -->
+  <circle cx="70" cy="74" r="6" fill="#bf8700"/>
+  <line x1="70" y1="58" x2="70" y2="50" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="70" y1="90" x2="70" y2="98" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="56" y1="74" x2="48" y2="74" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="84" y1="74" x2="92" y2="74" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="64" x2="54" y2="58" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="80" y1="84" x2="86" y2="90" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="80" y1="64" x2="86" y2="58" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="84" x2="54" y2="90" stroke="#bf8700" stroke-width="3" stroke-linecap="round"/>
+</svg>
