@@ -55,14 +55,17 @@
 
 
 
+
 @A milestone_plasma_deep :: fusion [d=2026-05-01 ok]
   <- milestone_kstar_n6_powerplant
   => "plasma-deep verb subtree lands — covers plasma physics + numerical solvers + ITER comparison"
 
 
 
+
 @A milestone_aneutronic_p_11b :: fusion [d=2026-05-10 ok]
   <- milestone_plasma_deep
   => "p-11B aneutronic path — cleanest fusion reaction, hardest cross-section; substrate added as v1 verb"
+
 
 
