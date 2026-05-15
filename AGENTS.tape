@@ -46,7 +46,7 @@
 @I id001 := "hexa-fusion" :: identity-claim [d=2026-05-14 active]
   kind = "HEXA-Fusion family — fusion · plasma"
   brief = "HEXA-Fusion family · fusion · plasma · 12 reactor closures · 122/122 EXACT"
-  parent = "dancinlab/echoes"
+  parent = "dancinlab"
 
 @L l1 := "repo-layout" :: structure [active]
   .roadmap.hexa_fusion -> "file"
